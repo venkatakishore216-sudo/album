@@ -654,7 +654,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
 // STEP 3: Create OAuth 2.0 Client ID (Web Application)
 // STEP 4: Add your domain to "Authorized JavaScript Origins"
 // STEP 5: Paste your Client ID below:
-const GOOGLE_CLIENT_ID = '769785927554-vutb9bqc1bp49pfvjfg4esgir1mn44g4.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID_HERE.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
 let accessToken = null;
@@ -685,7 +685,7 @@ const TRACKS = [
 // GOOGLE DRIVE AUTH
 // ════════════════════════════════════════
 function connectGoogleDrive() {
-  if(GOOGLE_CLIENT_ID === '') {
+  if(GOOGLE_CLIENT_ID === 'YOUR_GOOGLE_CLIENT_ID_HERE.apps.googleusercontent.com') {
     showToast('⚠️ Add your Google Client ID first!');
     showSetupInstructions();
     return;
