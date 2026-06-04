@@ -1,0 +1,2364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FlipFolio — Digital Album Platform</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Outfit:wght@200;300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+/* ════════════════════════════════════
+   ROOT & RESET
+════════════════════════════════════ */
+:root {
+  --ink:#0a0a0f;
+  --ink2:#12121a;
+  --ink3:#1c1c28;
+  --ink4:#26263a;
+  --gold:#d4a843;
+  --gold2:#f0c85a;
+  --gold3:#8a6820;
+  --rose:#c96060;
+  --violet:#7c5cbf;
+  --teal:#3ba8a0;
+  --cream:#f5f0e8;
+  --text:#c8c0d0;
+  --muted:#6a6278;
+  --muted2:#3e3850;
+  --green:#4db880;
+  --red:#e05555;
+  --r:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Outfit',sans-serif;background:var(--ink);color:var(--text);min-height:100vh;overflow-x:hidden;cursor:default;}
+::selection{background:rgba(212,168,67,0.25);color:var(--cream);}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:var(--ink2);}
+::-webkit-scrollbar-thumb{background:var(--muted2);border-radius:2px;}
+
+/* ── NOISE OVERLAY ── */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  opacity:0.5;
+}
+
+/* ════════════════════════════════════
+   SCREENS SYSTEM
+════════════════════════════════════ */
+.screen{display:none;min-height:100vh;position:relative;z-index:1;}
+.screen.active{display:block;}
+
+/* ════════════════════════════════════
+   ══ SCREEN: LANDING ══
+════════════════════════════════════ */
+#landingScreen{
+  background: radial-gradient(ellipse 120% 80% at 50% -10%, rgba(124,92,191,0.18) 0%, transparent 55%),
+              radial-gradient(ellipse 80% 60% at 90% 80%, rgba(212,168,67,0.08) 0%, transparent 50%),
+              var(--ink);
+}
+
+/* NAV */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:500;
+  height:68px;padding:0 48px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(10,10,15,0.7);
+  backdrop-filter:blur(24px) saturate(1.3);
+  border-bottom:1px solid rgba(255,255,255,0.05);
+}
+.nav-logo{
+  font-family:'Playfair Display',serif;
+  font-size:1.5rem;font-weight:900;
+  color:var(--gold);letter-spacing:-0.5px;
+  display:flex;align-items:center;gap:10px;
+}
+.nav-logo-dot{
+  width:9px;height:9px;border-radius:50%;
+  background:linear-gradient(135deg,var(--gold),var(--rose));
+  box-shadow:0 0 16px rgba(212,168,67,0.6);
+  animation:ndot 3s ease-in-out infinite;
+}
+@keyframes ndot{0%,100%{transform:scale(1);}50%{transform:scale(1.3);box-shadow:0 0 24px rgba(212,168,67,0.8);}}
+.nav-links{display:flex;align-items:center;gap:6px;}
+.nav-link{
+  padding:8px 18px;border-radius:8px;
+  font-size:0.85rem;font-weight:400;color:var(--muted);
+  cursor:pointer;transition:all 0.2s;border:none;background:transparent;
+  font-family:'Outfit',sans-serif;
+}
+.nav-link:hover{color:var(--cream);}
+.nav-cta{
+  padding:9px 22px;border-radius:50px;
+  background:linear-gradient(135deg,var(--gold),var(--gold3));
+  color:var(--ink);font-weight:700;font-size:0.85rem;
+  border:none;cursor:pointer;transition:all 0.25s;
+  box-shadow:0 4px 20px rgba(212,168,67,0.3);
+  font-family:'Outfit',sans-serif;
+}
+.nav-cta:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(212,168,67,0.45);}
+
+/* HERO */
+.hero{
+  padding:160px 48px 80px;
+  max-width:1100px;margin:0 auto;
+  display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;
+}
+.hero-left{}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 16px;border-radius:20px;margin-bottom:28px;
+  background:rgba(212,168,67,0.08);
+  border:1px solid rgba(212,168,67,0.2);
+  font-size:0.72rem;font-weight:500;color:var(--gold);
+  letter-spacing:2px;text-transform:uppercase;
+}
+.hero-badge span{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:ndot 2s infinite;}
+.hero-h1{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(2.8rem,4.5vw,4rem);
+  font-weight:900;line-height:1.08;
+  color:var(--cream);margin-bottom:20px;
+}
+.hero-h1 em{font-style:italic;color:var(--gold);}
+.hero-h1 .line2{color:var(--muted);font-weight:400;}
+.hero-p{font-size:1rem;color:var(--muted);line-height:1.75;margin-bottom:36px;max-width:440px;font-weight:300;}
+.hero-btns{display:flex;gap:14px;flex-wrap:wrap;}
+.btn-primary{
+  padding:14px 32px;border-radius:50px;
+  background:linear-gradient(135deg,var(--gold),var(--gold3));
+  color:var(--ink);font-weight:700;font-size:0.95rem;
+  border:none;cursor:pointer;transition:all 0.25s;
+  font-family:'Outfit',sans-serif;
+  box-shadow:0 6px 24px rgba(212,168,67,0.35);
+  display:flex;align-items:center;gap:8px;
+}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(212,168,67,0.5);}
+.btn-secondary{
+  padding:14px 32px;border-radius:50px;
+  background:transparent;
+  border:1.5px solid rgba(255,255,255,0.12);
+  color:var(--cream);font-weight:400;font-size:0.95rem;
+  cursor:pointer;transition:all 0.25s;
+  font-family:'Outfit',sans-serif;
+}
+.btn-secondary:hover{border-color:rgba(212,168,67,0.4);color:var(--gold);}
+.hero-stats{display:flex;gap:32px;margin-top:44px;}
+.hs{text-align:left;}
+.hs-num{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:var(--cream);}
+.hs-lbl{font-size:0.72rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+
+/* HERO RIGHT - Book mockup */
+.hero-right{
+  display:flex;justify-content:center;align-items:center;
+  position:relative;
+}
+.book-mockup{
+  position:relative;
+  filter:drop-shadow(0 40px 80px rgba(0,0,0,0.8));
+}
+.bm-book{
+  display:flex;
+  transform:perspective(1000px) rotateY(-8deg) rotateX(3deg);
+  transition:transform 0.4s ease;
+}
+.bm-book:hover{transform:perspective(1000px) rotateY(-4deg) rotateX(1deg);}
+.bm-page{
+  width:180px;height:240px;
+  border-radius:3px 0 0 3px;
+  overflow:hidden;
+  background:linear-gradient(135deg,#2a2018,#1a140c);
+  border:1px solid rgba(212,168,67,0.15);
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:8px;
+}
+.bm-page2{
+  width:180px;height:240px;
+  border-radius:0 3px 3px 0;
+  overflow:hidden;
+  background:linear-gradient(135deg,#1e1812,#28201a);
+  border:1px solid rgba(212,168,67,0.1);
+  display:flex;align-items:center;justify-content:center;
+}
+.bm-spine{
+  width:16px;height:240px;
+  background:linear-gradient(to right,#050403,rgba(212,168,67,0.3),rgba(212,168,67,0.4),rgba(212,168,67,0.25),#080606);
+}
+.bm-icon{font-size:2.5rem;opacity:0.6;}
+.bm-text{font-family:'Playfair Display',serif;font-size:0.65rem;color:rgba(212,168,67,0.5);letter-spacing:2px;text-transform:uppercase;}
+.bm-lines{display:flex;flex-direction:column;gap:5px;padding:20px;}
+.bm-line{height:3px;background:rgba(212,168,67,0.15);border-radius:2px;}
+.bm-line:nth-child(2){width:80%;}
+.bm-line:nth-child(3){width:60%;}
+
+/* Floating elements */
+.float-card{
+  position:absolute;
+  background:rgba(26,26,38,0.9);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px;backdrop-filter:blur(12px);
+  padding:12px 16px;
+  animation:floatAnim 4s ease-in-out infinite;
+}
+.float-card.fc1{bottom:-20px;left:-40px;animation-delay:0s;}
+.float-card.fc2{top:20px;right:-30px;animation-delay:-2s;}
+@keyframes floatAnim{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+.fc-label{font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.fc-value{font-size:0.9rem;font-weight:600;color:var(--cream);}
+.fc-sub{font-size:0.7rem;color:var(--green);}
+
+/* FEATURES SECTION */
+.features-section{
+  max-width:1100px;margin:0 auto;
+  padding:80px 48px;
+}
+.section-eyebrow{
+  font-size:0.7rem;font-weight:500;letter-spacing:4px;
+  text-transform:uppercase;color:var(--violet);
+  margin-bottom:16px;
+}
+.section-title{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(2rem,3.5vw,2.8rem);
+  font-weight:700;color:var(--cream);margin-bottom:8px;
+}
+.section-sub{font-size:0.95rem;color:var(--muted);max-width:500px;line-height:1.7;font-weight:300;}
+.features-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:20px;margin-top:52px;
+}
+.feat{
+  background:var(--ink2);
+  border:1px solid rgba(255,255,255,0.05);
+  border-radius:var(--r);padding:28px;
+  transition:all 0.3s;position:relative;overflow:hidden;
+}
+.feat::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--feat-color,var(--gold)),transparent);
+  opacity:0;transition:opacity 0.3s;
+}
+.feat:hover{border-color:rgba(255,255,255,0.1);transform:translateY(-4px);}
+.feat:hover::before{opacity:1;}
+.feat-icon{
+  width:44px;height:44px;border-radius:10px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.06);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;margin-bottom:18px;
+}
+.feat-title{font-size:0.95rem;font-weight:600;color:var(--cream);margin-bottom:8px;}
+.feat-desc{font-size:0.8rem;color:var(--muted);line-height:1.65;font-weight:300;}
+
+/* HOW IT WORKS */
+.how-section{
+  max-width:1100px;margin:0 auto;
+  padding:80px 48px;
+}
+.steps-row{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:0;margin-top:52px;position:relative;
+}
+.steps-row::before{
+  content:'';position:absolute;top:36px;left:60px;right:60px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(212,168,67,0.2),rgba(212,168,67,0.4),rgba(212,168,67,0.2),transparent);
+}
+.step{text-align:center;padding:0 20px;position:relative;}
+.step-n{
+  width:72px;height:72px;border-radius:50%;
+  background:var(--ink2);border:2px solid rgba(212,168,67,0.2);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 20px;font-size:1.6rem;
+  position:relative;z-index:1;
+  transition:all 0.3s;
+}
+.step:hover .step-n{border-color:var(--gold);box-shadow:0 0 20px rgba(212,168,67,0.2);}
+.step-title{font-size:0.9rem;font-weight:600;color:var(--cream);margin-bottom:8px;}
+.step-desc{font-size:0.78rem;color:var(--muted);line-height:1.6;font-weight:300;}
+
+/* PRICING */
+.pricing-section{
+  max-width:1100px;margin:0 auto;
+  padding:80px 48px;
+}
+.pricing-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:20px;margin-top:52px;
+}
+.price-card{
+  background:var(--ink2);border:1px solid rgba(255,255,255,0.06);
+  border-radius:var(--r);padding:32px;position:relative;overflow:hidden;
+  transition:all 0.3s;
+}
+.price-card.popular{
+  border-color:rgba(212,168,67,0.3);
+  background:linear-gradient(135deg,rgba(212,168,67,0.05),var(--ink2));
+}
+.price-card:hover{transform:translateY(-4px);}
+.popular-badge{
+  position:absolute;top:20px;right:20px;
+  background:var(--gold);color:var(--ink);
+  font-size:0.65rem;font-weight:700;
+  padding:4px 12px;border-radius:20px;
+  letter-spacing:1px;text-transform:uppercase;
+}
+.price-plan{font-size:0.72rem;font-weight:500;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;}
+.price-amount{
+  font-family:'Playfair Display',serif;
+  font-size:2.8rem;font-weight:700;color:var(--cream);
+  display:flex;align-items:flex-start;gap:4px;margin-bottom:6px;
+}
+.price-amount sup{font-size:1rem;margin-top:10px;color:var(--muted);}
+.price-amount .free{font-size:2rem;}
+.price-period{font-size:0.78rem;color:var(--muted);margin-bottom:24px;}
+.price-features{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:28px;}
+.price-features li{display:flex;align-items:center;gap:10px;font-size:0.82rem;color:var(--text);}
+.price-features li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0;}
+.price-features li.no{color:var(--muted);}
+.price-features li.no::before{content:'✗';color:var(--muted2);}
+.btn-plan{
+  width:100%;padding:12px;border-radius:10px;
+  font-family:'Outfit',sans-serif;font-size:0.88rem;font-weight:600;
+  cursor:pointer;transition:all 0.2s;
+}
+.btn-plan-outline{background:transparent;border:1.5px solid rgba(212,168,67,0.25);color:var(--gold);}
+.btn-plan-outline:hover{background:rgba(212,168,67,0.08);border-color:var(--gold);}
+.btn-plan-fill{background:linear-gradient(135deg,var(--gold),var(--gold3));color:var(--ink);border:none;box-shadow:0 4px 16px rgba(212,168,67,0.25);}
+.btn-plan-fill:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(212,168,67,0.4);}
+
+/* FOOTER */
+footer{
+  max-width:1100px;margin:0 auto;
+  padding:40px 48px;
+  border-top:1px solid rgba(255,255,255,0.05);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;
+}
+.footer-logo{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--gold);}
+.footer-copy{font-size:0.78rem;color:var(--muted);}
+.footer-links{display:flex;gap:20px;}
+.footer-link{font-size:0.78rem;color:var(--muted);cursor:pointer;transition:color 0.2s;}
+.footer-link:hover{color:var(--gold);}
+
+/* ════════════════════════════════════
+   ══ SCREEN: DASHBOARD ══
+════════════════════════════════════ */
+#dashboardScreen{background:var(--ink);}
+
+/* DASHBOARD LAYOUT */
+.dash-layout{display:flex;min-height:100vh;}
+
+/* SIDEBAR */
+.dash-sidebar{
+  width:240px;flex-shrink:0;
+  background:var(--ink2);
+  border-right:1px solid rgba(255,255,255,0.05);
+  display:flex;flex-direction:column;
+  padding:0;
+  position:fixed;top:0;left:0;bottom:0;z-index:200;
+}
+.ds-logo{
+  padding:20px 24px;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  font-family:'Playfair Display',serif;
+  font-size:1.3rem;font-weight:900;color:var(--gold);
+  display:flex;align-items:center;gap:8px;
+}
+.ds-logo-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px rgba(212,168,67,0.5);}
+.ds-nav{flex:1;padding:16px 12px;display:flex;flex-direction:column;gap:4px;}
+.ds-item{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 12px;border-radius:9px;
+  font-size:0.84rem;font-weight:400;color:var(--muted);
+  cursor:pointer;transition:all 0.2s;border:none;background:transparent;
+  font-family:'Outfit',sans-serif;width:100%;text-align:left;
+}
+.ds-item:hover{background:rgba(255,255,255,0.04);color:var(--cream);}
+.ds-item.active{background:rgba(212,168,67,0.1);color:var(--gold);font-weight:500;}
+.ds-item-icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0;}
+.ds-section-label{font-size:0.6rem;color:var(--muted2);letter-spacing:2px;text-transform:uppercase;padding:12px 12px 6px;margin-top:8px;}
+.ds-bottom{padding:16px 12px;border-top:1px solid rgba(255,255,255,0.05);}
+.ds-user{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:9px;
+  background:rgba(255,255,255,0.03);
+}
+.ds-avatar{
+  width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,var(--gold),var(--violet));
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.8rem;font-weight:700;color:var(--ink);flex-shrink:0;
+}
+.ds-uname{font-size:0.8rem;color:var(--cream);font-weight:500;}
+.ds-uemail{font-size:0.65rem;color:var(--muted);}
+
+/* MAIN CONTENT */
+.dash-main{
+  margin-left:240px;flex:1;
+  padding:0;min-height:100vh;
+}
+
+/* TOPBAR */
+.dash-topbar{
+  height:64px;
+  background:rgba(10,10,15,0.8);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  padding:0 32px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+}
+.dt-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--cream);}
+.dt-actions{display:flex;align-items:center;gap:10px;}
+.btn-upload-new{
+  padding:9px 20px;border-radius:9px;
+  background:linear-gradient(135deg,var(--gold),var(--gold3));
+  color:var(--ink);font-weight:700;font-size:0.82rem;
+  border:none;cursor:pointer;transition:all 0.2s;
+  font-family:'Outfit',sans-serif;
+  display:flex;align-items:center;gap:6px;
+  box-shadow:0 4px 16px rgba(212,168,67,0.25);
+}
+.btn-upload-new:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(212,168,67,0.4);}
+
+/* DASH CONTENT */
+.dash-content{padding:32px;}
+
+/* STATS ROW */
+.stats-row{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:16px;margin-bottom:32px;
+}
+.stat-card{
+  background:var(--ink2);border:1px solid rgba(255,255,255,0.05);
+  border-radius:var(--r);padding:20px 24px;
+  position:relative;overflow:hidden;
+}
+.stat-card::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--sc-color,var(--gold)),transparent);
+  opacity:0.6;
+}
+.sc-label{font-size:0.68rem;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;}
+.sc-value{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--cream);}
+.sc-change{font-size:0.72rem;color:var(--green);margin-top:4px;}
+
+/* ALBUMS GRID */
+.albums-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:20px;flex-wrap:wrap;gap:12px;
+}
+.albums-title{font-size:1rem;font-weight:600;color:var(--cream);}
+.albums-search{
+  display:flex;align-items:center;gap:8px;
+  background:var(--ink3);border:1px solid rgba(255,255,255,0.07);
+  border-radius:8px;padding:8px 14px;
+}
+.albums-search input{
+  background:transparent;border:none;outline:none;
+  color:var(--cream);font-size:0.82rem;font-family:'Outfit',sans-serif;
+  width:160px;
+}
+.albums-search input::placeholder{color:var(--muted);}
+
+.albums-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:18px;
+}
+
+/* ALBUM CARD */
+.album-card{
+  background:var(--ink2);
+  border:1px solid rgba(255,255,255,0.05);
+  border-radius:var(--r);overflow:hidden;
+  transition:all 0.25s;cursor:pointer;
+  position:relative;
+}
+.album-card:hover{border-color:rgba(212,168,67,0.2);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,0.4);}
+.album-thumb{
+  height:150px;
+  background:linear-gradient(135deg,var(--ink3),var(--ink4));
+  display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+}
+.album-thumb-img{width:100%;height:100%;object-fit:cover;display:block;}
+.album-thumb-placeholder{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+.atp-icon{font-size:2.5rem;opacity:0.4;}
+.atp-text{font-size:0.65rem;color:var(--muted2);text-transform:uppercase;letter-spacing:2px;}
+.album-status{
+  position:absolute;top:10px;right:10px;
+  padding:3px 10px;border-radius:20px;
+  font-size:0.62rem;font-weight:600;
+  letter-spacing:0.5px;text-transform:uppercase;
+}
+.status-published{background:rgba(77,184,128,0.15);border:1px solid rgba(77,184,128,0.3);color:var(--green);}
+.status-draft{background:rgba(106,98,120,0.2);border:1px solid rgba(106,98,120,0.3);color:var(--muted);}
+.album-info{padding:16px;}
+.album-name{font-size:0.9rem;font-weight:600;color:var(--cream);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.album-meta{font-size:0.72rem;color:var(--muted);display:flex;align-items:center;gap:8px;}
+.album-actions{
+  display:flex;gap:6px;padding:0 12px 12px;
+}
+.aa-btn{
+  flex:1;padding:8px;border-radius:8px;
+  font-family:'Outfit',sans-serif;font-size:0.75rem;font-weight:500;
+  cursor:pointer;transition:all 0.2s;border:none;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+}
+.aa-view{background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.15);color:var(--gold);}
+.aa-view:hover{background:rgba(212,168,67,0.15);}
+.aa-publish{background:rgba(124,92,191,0.1);border:1px solid rgba(124,92,191,0.2);color:#a890e0;}
+.aa-publish:hover{background:rgba(124,92,191,0.2);}
+.aa-share{background:rgba(59,168,160,0.1);border:1px solid rgba(59,168,160,0.2);color:var(--teal);}
+.aa-share:hover{background:rgba(59,168,160,0.2);}
+.aa-delete{background:rgba(224,85,85,0.08);border:1px solid rgba(224,85,85,0.15);color:var(--red);}
+.aa-delete:hover{background:rgba(224,85,85,0.15);}
+
+/* EMPTY STATE */
+.empty-state{
+  text-align:center;padding:80px 24px;
+  grid-column:1/-1;
+}
+.es-icon{font-size:4rem;margin-bottom:20px;opacity:0.3;}
+.es-title{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--cream);margin-bottom:8px;}
+.es-desc{font-size:0.85rem;color:var(--muted);margin-bottom:28px;line-height:1.6;}
+
+/* ════════════════════════════════════
+   ══ SCREEN: EDITOR/VIEWER ══
+════════════════════════════════════ */
+#editorScreen{background:var(--ink);}
+.editor-layout{display:flex;flex-direction:column;height:100vh;}
+
+/* Editor Topbar */
+.editor-topbar{
+  height:58px;
+  background:rgba(10,10,15,0.95);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  padding:0 20px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  flex-shrink:0;
+}
+.et-left{display:flex;align-items:center;gap:10px;}
+.et-back{
+  width:36px;height:36px;border-radius:8px;
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);
+  color:var(--muted);cursor:pointer;transition:all 0.2s;
+  display:flex;align-items:center;justify-content:center;font-size:1rem;
+}
+.et-back:hover{color:var(--cream);border-color:rgba(255,255,255,0.12);}
+.et-album-name{
+  font-family:'Playfair Display',serif;
+  font-size:1rem;font-weight:600;color:var(--cream);
+  max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.et-center{display:flex;align-items:center;gap:6px;}
+.et-right{display:flex;align-items:center;gap:8px;}
+.et-btn{
+  height:34px;padding:0 14px;border-radius:8px;
+  border:1px solid rgba(255,255,255,0.08);
+  background:transparent;color:var(--text);
+  font-family:'Outfit',sans-serif;font-size:0.77rem;
+  cursor:pointer;transition:all 0.2s;
+  display:flex;align-items:center;gap:6px;white-space:nowrap;
+}
+.et-btn:hover{border-color:rgba(212,168,67,0.3);color:var(--gold);}
+.et-btn.on{background:rgba(212,168,67,0.1);border-color:rgba(212,168,67,0.3);color:var(--gold);}
+.et-btn:disabled{opacity:0.2;cursor:not-allowed;}
+.et-sep{width:1px;height:22px;background:rgba(255,255,255,0.06);}
+.et-publish-btn{
+  height:34px;padding:0 18px;border-radius:8px;
+  background:linear-gradient(135deg,#7c3aed,#4f46e5);
+  color:#fff;font-weight:700;font-size:0.78rem;
+  border:none;cursor:pointer;transition:all 0.2s;
+  font-family:'Outfit',sans-serif;
+  display:flex;align-items:center;gap:6px;
+  box-shadow:0 2px 14px rgba(124,58,237,0.4);
+}
+.et-publish-btn:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(124,58,237,0.6);}
+.et-share-btn{
+  height:34px;padding:0 18px;border-radius:8px;
+  background:linear-gradient(135deg,var(--gold),var(--gold3));
+  color:var(--ink);font-weight:700;font-size:0.78rem;
+  border:none;cursor:pointer;transition:all 0.2s;
+  font-family:'Outfit',sans-serif;
+  display:flex;align-items:center;gap:6px;
+}
+.et-share-btn:hover{transform:translateY(-1px);}
+
+/* Editor body */
+.editor-body{display:flex;flex:1;overflow:hidden;}
+
+/* Settings sidebar */
+.editor-sidebar{
+  width:260px;flex-shrink:0;
+  background:var(--ink2);
+  border-right:1px solid rgba(255,255,255,0.05);
+  overflow-y:auto;
+  transition:width 0.3s cubic-bezier(.4,0,.2,1);
+}
+.editor-sidebar.collapsed{width:0;overflow:hidden;}
+.esi{width:260px;padding:16px;}
+.esi::-webkit-scrollbar{width:3px;}
+.esi::-webkit-scrollbar-thumb{background:var(--muted2);border-radius:2px;}
+.es-sec{margin-bottom:24px;}
+.es-lbl{font-size:0.6rem;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.05);}
+
+/* Anim grid */
+.ag{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+.ag-item{
+  padding:8px 4px;border-radius:8px;
+  border:1.5px solid rgba(255,255,255,0.07);
+  background:rgba(255,255,255,0.02);
+  cursor:pointer;transition:all 0.2s;text-align:center;
+}
+.ag-item:hover{border-color:rgba(212,168,67,0.3);}
+.ag-item.sel{border-color:var(--gold);background:rgba(212,168,67,0.08);}
+.ag-icon{font-size:1.1rem;display:block;margin-bottom:2px;}
+.ag-name{font-size:0.6rem;color:var(--text);}
+.ag-item.sel .ag-name{color:var(--gold);}
+
+/* Theme swatches */
+.tg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.tsw{aspect-ratio:1;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:all 0.2s;position:relative;overflow:hidden;}
+.tsw:hover{transform:scale(1.08);}
+.tsw.sel{border-color:var(--gold);box-shadow:0 0 10px rgba(212,168,67,0.3);}
+.tsw span{position:absolute;bottom:2px;left:0;right:0;text-align:center;font-size:0.48rem;color:rgba(255,255,255,0.5);}
+
+/* Music */
+.ml{display:flex;flex-direction:column;gap:6px;}
+.ml-item{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 10px;border-radius:8px;
+  border:1px solid rgba(255,255,255,0.06);
+  cursor:pointer;transition:all 0.2s;
+  background:rgba(255,255,255,0.02);
+}
+.ml-item:hover{border-color:rgba(212,168,67,0.2);}
+.ml-item.playing{border-color:var(--gold);background:rgba(212,168,67,0.07);}
+.ml-icon{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;}
+.ml-info{flex:1;min-width:0;}
+.ml-name{font-size:0.74rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ml-artist{font-size:0.6rem;color:var(--muted);margin-top:1px;}
+.ml-upload{
+  width:100%;padding:8px;
+  background:rgba(255,255,255,0.02);
+  border:1px dashed rgba(212,168,67,0.15);
+  border-radius:8px;color:var(--muted);
+  font-size:0.74rem;cursor:pointer;
+  transition:all 0.2s;font-family:'Outfit',sans-serif;margin-top:6px;
+}
+.ml-upload:hover{border-color:rgba(212,168,67,0.35);color:var(--gold);}
+.vol-row{display:flex;align-items:center;gap:8px;margin-top:8px;}
+
+/* Thumb strip */
+.thumb-strip-v{display:flex;flex-direction:column;gap:6px;}
+.tv-item{
+  display:flex;align-items:center;gap:8px;
+  padding:4px;border-radius:7px;
+  cursor:pointer;transition:all 0.2s;
+  border:1px solid transparent;
+}
+.tv-item:hover{background:rgba(212,168,67,0.04);}
+.tv-item.active{background:rgba(212,168,67,0.06);border-color:rgba(212,168,67,0.15);}
+.tv-canvas{width:40px;height:52px;border-radius:3px;overflow:hidden;flex-shrink:0;background:var(--ink3);}
+.tv-canvas canvas{width:100%;height:100%;display:block;}
+.tv-num{font-size:0.65rem;color:var(--muted);}
+
+/* Stage */
+.editor-stage{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:20px;position:relative;overflow:hidden;transition:background 0.5s;
+}
+.editor-stage.bg-ink{background:var(--ink);}
+.editor-stage.bg-rose{background:radial-gradient(ellipse at center,#1a0c0c,#080608 70%);}
+.editor-stage.bg-forest{background:radial-gradient(ellipse at center,#0a100c,#060808 70%);}
+.editor-stage.bg-ocean{background:radial-gradient(ellipse at center,#080e1a,#060608 70%);}
+.editor-stage.bg-violet{background:radial-gradient(ellipse at center,#100a1a,#080608 70%);}
+.editor-stage.bg-cream{background:#ede8e0;}
+.editor-stage.bg-cream .cv-controls .cv-btn,.editor-stage.bg-cream .controls .cb{color:#444;border-color:rgba(0,0,0,0.15);}
+.editor-stage.bg-cream .pi,.editor-stage.bg-cream .pi strong{color:#333 !important;}
+
+/* ── BOOK ── */
+.book-wrap{perspective:2400px;}
+.book{
+  display:flex;align-items:stretch;
+  filter:drop-shadow(0 40px 90px rgba(0,0,0,0.85));
+  transform-style:preserve-3d;transition:transform 0.3s ease;
+}
+.book:hover{transform:rotateY(-2deg) rotateX(1deg);}
+.bk-l,.bk-r{width:300px;max-width:38vw;position:relative;overflow:hidden;background:#1a1510;}
+.bk-l{border-radius:5px 0 0 5px;box-shadow:inset -10px 0 28px rgba(0,0,0,0.6);}
+.bk-r{border-radius:0 5px 5px 0;box-shadow:inset 10px 0 28px rgba(0,0,0,0.3);}
+.bk-l::after,.bk-r::before{content:'';position:absolute;top:0;bottom:0;width:30px;pointer-events:none;}
+.bk-l::after{right:0;background:linear-gradient(to right,rgba(0,0,0,0.28),transparent);}
+.bk-r::before{left:0;background:linear-gradient(to left,rgba(0,0,0,0.18),transparent);}
+.bk-spine{width:18px;flex-shrink:0;background:linear-gradient(to right,#050403 0%,rgba(212,168,67,0.22) 30%,rgba(212,168,67,0.32) 50%,rgba(212,168,67,0.18) 70%,#080606 100%);}
+.bk-pc{width:100%;height:auto;display:block;}
+.bk-pgn{position:absolute;bottom:8px;left:0;right:0;text-align:center;font-size:0.58rem;font-family:'Playfair Display',serif;color:rgba(212,168,67,0.35);pointer-events:none;letter-spacing:1.5px;z-index:3;}
+
+/* ── ANIMATIONS ── */
+@keyframes flipL{0%{transform:perspective(1400px) rotateY(0);}50%{transform:perspective(1400px) rotateY(-85deg);}100%{transform:perspective(1400px) rotateY(0);}}
+@keyframes flipR{0%{transform:perspective(1400px) rotateY(0);}50%{transform:perspective(1400px) rotateY(85deg);}100%{transform:perspective(1400px) rotateY(0);}}
+.af-next .bk-l{animation:flipL 0.55s ease-in-out;}
+.af-prev .bk-r{animation:flipR 0.55s ease-in-out;}
+@keyframes slR{from{transform:translateX(70px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+@keyframes slL{from{transform:translateX(-70px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+.as-next .bk-r{animation:slR 0.4s cubic-bezier(.4,0,.2,1);}
+.as-next .bk-l{animation:slL 0.4s cubic-bezier(.4,0,.2,1);}
+.as-prev .bk-l{animation:slR 0.4s cubic-bezier(.4,0,.2,1);}
+.as-prev .bk-r{animation:slL 0.4s cubic-bezier(.4,0,.2,1);}
+@keyframes fdI{from{opacity:0;}to{opacity:1;}}
+.afd-next .bk-l,.afd-next .bk-r,.afd-prev .bk-l,.afd-prev .bk-r{animation:fdI 0.5s ease;}
+@keyframes zmI{from{transform:scale(0.87);opacity:0;}to{transform:scale(1);opacity:1;}}
+.az-next .bk-l,.az-next .bk-r,.az-prev .bk-l,.az-prev .bk-r{animation:zmI 0.45s cubic-bezier(.34,1.4,.64,1);}
+@keyframes cuL{0%{transform:perspective(1100px) rotateY(0) skewY(0);}40%{transform:perspective(1100px) rotateY(-68deg) skewY(-3deg);}100%{transform:perspective(1100px) rotateY(0) skewY(0);}}
+@keyframes cuR{0%{transform:perspective(1100px) rotateY(0) skewY(0);}40%{transform:perspective(1100px) rotateY(68deg) skewY(3deg);}100%{transform:perspective(1100px) rotateY(0) skewY(0);}}
+.ac-next .bk-l{animation:cuL 0.6s ease-in-out;}
+.ac-prev .bk-r{animation:cuR 0.6s ease-in-out;}
+@keyframes bnI{0%{transform:scale(0.72) translateY(28px);opacity:0;}60%{transform:scale(1.04) translateY(-4px);opacity:1;}100%{transform:scale(1);opacity:1;}}
+.ab-next .bk-l,.ab-next .bk-r,.ab-prev .bk-l,.ab-prev .bk-r{animation:bnI 0.55s cubic-bezier(.34,1.56,.64,1);}
+
+/* Controls */
+.controls{display:flex;align-items:center;gap:12px;margin-top:20px;}
+.cb{width:42px;height:42px;border-radius:50%;border:1px solid rgba(212,168,67,0.2);background:rgba(212,168,67,0.04);color:var(--text);font-size:0.9rem;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;}
+.cb:hover:not(:disabled){border-color:var(--gold);color:var(--gold);background:rgba(212,168,67,0.1);}
+.cb:disabled{opacity:0.15;cursor:not-allowed;}
+.pi{font-family:'Playfair Display',serif;font-size:0.9rem;color:var(--muted);min-width:90px;text-align:center;}
+.pi strong{color:var(--cream);}
+
+/* Particles */
+.sp{position:absolute;pointer-events:none;animation:fp linear infinite;opacity:0;}
+@keyframes fp{0%{transform:translateY(100vh) rotate(0);opacity:0;}10%{opacity:0.7;}90%{opacity:0.15;}100%{transform:translateY(-80px) rotate(720deg);opacity:0;}}
+
+/* Music bar */
+.music-bar{position:fixed;bottom:0;left:240px;right:0;height:56px;z-index:400;background:rgba(10,10,15,0.95);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,0.05);display:none;align-items:center;padding:0 20px;gap:12px;}
+.music-bar.vis{display:flex;}
+.mb-thumb{width:32px;height:32px;border-radius:7px;background:rgba(212,168,67,0.1);border:1px solid rgba(212,168,67,0.15);display:flex;align-items:center;justify-content:center;font-size:0.9rem;}
+.mb-info{flex:1;min-width:0;}
+.mb-name{font-size:0.76rem;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mb-artist{font-size:0.62rem;color:var(--muted);}
+.mb-ctrls{display:flex;align-items:center;gap:6px;}
+.mbc{background:transparent;border:none;color:var(--muted);font-size:0.9rem;cursor:pointer;transition:color 0.2s;padding:3px;}
+.mbc:hover,.mbc.on{color:var(--gold);}
+.mprog{flex:1;max-width:160px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;}
+.mpf{height:100%;background:var(--gold);border-radius:2px;transition:width 0.5s linear;pointer-events:none;}
+
+/* ════════════════════════════════════
+   ══ SCREEN: CLIENT VIEW ══
+════════════════════════════════════ */
+#clientScreen{
+  background:#07070d;
+  display:none;
+  position:fixed;inset:0;z-index:9900;
+  flex-direction:column;
+  align-items:center;justify-content:center;
+}
+#clientScreen.active{display:flex;}
+#clientScreen::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 60% 50% at 50% 5%,rgba(124,92,191,0.07),transparent 55%);
+  pointer-events:none;
+}
+.client-header{
+  position:absolute;top:0;left:0;right:0;
+  height:52px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;
+  background:rgba(7,7,13,0.92);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  z-index:2;
+}
+.ch-logo{
+  font-family:'Playfair Display',serif;
+  font-size:1rem;font-weight:700;color:rgba(212,168,67,0.7);
+  letter-spacing:1px;
+}
+.ch-album{
+  font-family:'Playfair Display',serif;
+  font-size:0.95rem;font-style:italic;
+  color:var(--cream);
+  max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.ch-mute{
+  width:34px;height:34px;border-radius:50%;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  color:rgba(255,255,255,0.5);font-size:1rem;
+  cursor:pointer;transition:all 0.2s;
+  display:flex;align-items:center;justify-content:center;
+}
+.ch-mute:hover{background:rgba(212,168,67,0.08);border-color:rgba(212,168,67,0.25);color:var(--gold);}
+.client-stage{
+  flex:1;width:100%;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:24px;padding-top:76px;
+  position:relative;z-index:1;
+}
+.client-book-wrap{perspective:2400px;}
+.client-book{
+  display:flex;align-items:stretch;
+  filter:drop-shadow(0 30px 70px rgba(0,0,0,0.95));
+}
+.cb-l,.cb-r{width:320px;max-width:41vw;position:relative;overflow:hidden;background:#1a1510;}
+.cb-l{border-radius:5px 0 0 5px;box-shadow:inset -10px 0 28px rgba(0,0,0,0.7);}
+.cb-r{border-radius:0 5px 5px 0;box-shadow:inset 10px 0 28px rgba(0,0,0,0.4);}
+.cb-l::after{content:'';position:absolute;top:0;right:0;bottom:0;width:30px;background:linear-gradient(to right,rgba(0,0,0,0.3),transparent);pointer-events:none;}
+.cb-r::before{content:'';position:absolute;top:0;left:0;bottom:0;width:30px;background:linear-gradient(to left,rgba(0,0,0,0.2),transparent);pointer-events:none;}
+.cb-spine{width:18px;flex-shrink:0;background:linear-gradient(to right,#050403 0%,rgba(212,168,67,0.25) 30%,rgba(212,168,67,0.35) 50%,rgba(212,168,67,0.2) 70%,#080606 100%);}
+.cb-pc{width:100%;height:auto;display:block;}
+.cb-pgn{position:absolute;bottom:8px;left:0;right:0;text-align:center;font-size:0.58rem;font-family:'Playfair Display',serif;color:rgba(212,168,67,0.3);pointer-events:none;letter-spacing:1.5px;}
+
+/* Client controls */
+.client-controls{
+  display:flex;align-items:center;gap:18px;
+  margin-top:26px;position:relative;z-index:2;
+}
+.cc-btn{
+  width:50px;height:50px;border-radius:50%;
+  border:1px solid rgba(212,168,67,0.18);
+  background:rgba(212,168,67,0.04);
+  color:rgba(212,168,67,0.6);font-size:1rem;
+  cursor:pointer;transition:all 0.25s;
+  display:flex;align-items:center;justify-content:center;
+}
+.cc-btn:hover:not(:disabled){border-color:var(--gold);color:var(--gold);background:rgba(212,168,67,0.1);transform:scale(1.05);}
+.cc-btn:disabled{opacity:0.12;cursor:not-allowed;}
+.cc-pi{
+  font-family:'Playfair Display',serif;
+  font-size:0.9rem;color:rgba(212,168,67,0.35);
+  min-width:80px;text-align:center;letter-spacing:1px;
+}
+.cc-pi strong{color:var(--cream);}
+
+/* Client anim */
+.cab-flip-next .cb-l{animation:flipL 0.55s ease-in-out;}
+.cab-flip-prev .cb-r{animation:flipR 0.55s ease-in-out;}
+.cab-slide-next .cb-r{animation:slR 0.4s cubic-bezier(.4,0,.2,1);}
+.cab-slide-next .cb-l{animation:slL 0.4s cubic-bezier(.4,0,.2,1);}
+.cab-slide-prev .cb-l{animation:slR 0.4s cubic-bezier(.4,0,.2,1);}
+.cab-slide-prev .cb-r{animation:slL 0.4s cubic-bezier(.4,0,.2,1);}
+.cab-fade-next .cb-l,.cab-fade-next .cb-r,.cab-fade-prev .cb-l,.cab-fade-prev .cb-r{animation:fdI 0.5s ease;}
+.cab-zoom-next .cb-l,.cab-zoom-next .cb-r,.cab-zoom-prev .cb-l,.cab-zoom-prev .cb-r{animation:zmI 0.45s cubic-bezier(.34,1.4,.64,1);}
+.cab-curl-next .cb-l{animation:cuL 0.6s ease-in-out;}
+.cab-curl-prev .cb-r{animation:cuR 0.6s ease-in-out;}
+.cab-bounce-next .cb-l,.cab-bounce-next .cb-r,.cab-bounce-prev .cb-l,.cab-bounce-prev .cb-r{animation:bnI 0.55s cubic-bezier(.34,1.56,.64,1);}
+.client-wm{position:absolute;bottom:12px;right:16px;font-family:'Playfair Display',serif;font-size:0.62rem;color:rgba(212,168,67,0.18);letter-spacing:1.5px;z-index:2;}
+
+/* ════════════════════════════════════
+   ══ MODALS ══
+════════════════════════════════════ */
+.modal-overlay{
+  display:none;position:fixed;inset:0;z-index:8000;
+  background:rgba(0,0,0,0.82);backdrop-filter:blur(12px);
+  align-items:center;justify-content:center;padding:20px;
+}
+.modal-overlay.open{display:flex;}
+.modal-box{
+  background:var(--ink2);
+  border:1px solid rgba(255,255,255,0.07);
+  border-radius:20px;padding:36px;
+  width:100%;max-width:500px;
+  position:relative;
+  box-shadow:0 60px 120px rgba(0,0,0,0.7);
+  animation:mboxIn 0.3s cubic-bezier(.34,1.3,.64,1);
+}
+@keyframes mboxIn{from{transform:scale(0.88) translateY(20px);opacity:0;}to{transform:scale(1);opacity:1;}}
+.modal-close{
+  position:absolute;top:14px;right:14px;
+  width:30px;height:30px;border-radius:50%;
+  border:1px solid rgba(255,255,255,0.08);
+  background:transparent;color:var(--muted);
+  cursor:pointer;font-size:0.95rem;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.2s;
+}
+.modal-close:hover{color:var(--cream);border-color:rgba(255,255,255,0.15);}
+.modal-title{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--cream);margin-bottom:4px;}
+.modal-sub{font-size:0.8rem;color:var(--muted);margin-bottom:24px;font-weight:300;}
+
+/* Share modal tabs */
+.tab-strip{display:flex;border:1px solid rgba(255,255,255,0.07);border-radius:9px;overflow:hidden;margin-bottom:20px;}
+.tab-s{flex:1;padding:9px 6px;background:transparent;border:none;color:var(--muted);font-size:0.78rem;cursor:pointer;transition:all 0.2s;font-family:'Outfit',sans-serif;}
+.tab-s.on{background:rgba(212,168,67,0.09);color:var(--gold);}
+.tab-panel{display:none;}
+.tab-panel.on{display:block;}
+.link-box{display:flex;gap:8px;align-items:center;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:9px;padding:9px 12px;margin-bottom:10px;}
+.link-box input{flex:1;background:transparent;border:none;color:var(--cream);font-size:0.8rem;outline:none;font-family:'Outfit',sans-serif;}
+.copy-btn{padding:7px 16px;background:var(--gold);color:var(--ink);border:none;border-radius:7px;font-weight:700;font-size:0.74rem;cursor:pointer;transition:all 0.2s;white-space:nowrap;font-family:'Outfit',sans-serif;}
+.copy-btn:hover{background:var(--gold2);}
+.copy-btn.ok{background:var(--green);color:#fff;}
+.link-tip{font-size:0.73rem;color:var(--muted);line-height:1.6;}
+.link-tip strong{color:var(--gold);}
+.qr-center{display:flex;flex-direction:column;align-items:center;gap:14px;}
+#qrcode{background:#fff;padding:12px;border-radius:10px;}
+.btn-dl-qr{padding:10px 26px;background:transparent;border:1.5px solid var(--gold);color:var(--gold);border-radius:50px;cursor:pointer;font-family:'Outfit',sans-serif;font-size:0.8rem;font-weight:500;transition:all 0.2s;}
+.btn-dl-qr:hover{background:var(--gold);color:var(--ink);}
+.embed-area{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:9px;padding:12px;font-size:0.7rem;color:var(--muted);font-family:monospace;line-height:1.6;word-break:break-all;margin-bottom:10px;white-space:pre-wrap;}
+
+/* Publish modal */
+.pub-box{max-width:520px;}
+.pub-what{background:rgba(124,92,191,0.05);border:1px solid rgba(124,92,191,0.15);border-radius:12px;padding:18px;margin-bottom:20px;}
+.pw-title{font-size:0.62rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(124,92,191,0.7);margin-bottom:10px;}
+.pw-items{display:flex;flex-direction:column;gap:7px;}
+.pw-item{display:flex;align-items:center;gap:9px;font-size:0.8rem;color:var(--text);}
+.pw-yes{color:var(--green);}
+.pw-no{color:var(--muted2);}
+.pub-name-label{font-size:0.68rem;font-weight:500;color:var(--muted);margin-bottom:7px;letter-spacing:1px;text-transform:uppercase;}
+.pub-name-input{width:100%;padding:11px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(124,92,191,0.2);border-radius:9px;color:var(--cream);font-family:'Playfair Display',serif;font-size:1.05rem;outline:none;transition:border-color 0.2s;margin-bottom:20px;}
+.pub-name-input:focus{border-color:rgba(124,92,191,0.45);}
+.pub-btns{display:flex;gap:10px;}
+.btn-pub-go{flex:1;padding:13px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;font-weight:700;font-size:0.88rem;border:none;border-radius:10px;cursor:pointer;transition:all 0.2s;font-family:'Outfit',sans-serif;box-shadow:0 4px 18px rgba(124,58,237,0.35);}
+.btn-pub-go:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(124,58,237,0.55);}
+.btn-cancel{padding:13px 20px;background:transparent;border:1px solid rgba(255,255,255,0.08);color:var(--muted);border-radius:10px;cursor:pointer;font-family:'Outfit',sans-serif;font-size:0.82rem;transition:all 0.2s;}
+.btn-cancel:hover{border-color:rgba(255,255,255,0.14);color:var(--cream);}
+
+/* Upload modal */
+.upload-drop{
+  border:2px dashed rgba(212,168,67,0.2);
+  border-radius:16px;padding:48px 24px;
+  text-align:center;cursor:pointer;
+  transition:all 0.3s;
+  background:rgba(212,168,67,0.02);
+  position:relative;
+}
+.upload-drop:hover,.upload-drop.drag{border-color:var(--gold);background:rgba(212,168,67,0.05);}
+.ud-icon{font-size:3rem;margin-bottom:16px;display:block;}
+.ud-title{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--cream);margin-bottom:6px;}
+.ud-sub{font-size:0.8rem;color:var(--muted);}
+
+/* Progress */
+.upload-progress{margin-top:20px;display:none;}
+.up-label{font-size:0.8rem;color:var(--muted);margin-bottom:8px;}
+.up-track{height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;}
+.up-fill{height:100%;background:linear-gradient(90deg,var(--rose),var(--gold),var(--gold2));border-radius:2px;transition:width 0.3s ease;width:0%;}
+.up-pct{font-size:0.72rem;color:var(--gold);text-align:right;margin-top:4px;}
+
+/* Drive success banner */
+.drive-banner{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:10px;background:rgba(77,184,128,0.07);border:1px solid rgba(77,184,128,0.2);margin-bottom:18px;}
+.db-icon{font-size:1.2rem;}
+.db-text{flex:1;}
+.db-title{font-size:0.82rem;font-weight:500;color:var(--green);}
+.db-sub{font-size:0.68rem;color:var(--muted);}
+.db-open{padding:5px 14px;background:rgba(77,184,128,0.12);border:1px solid rgba(77,184,128,0.25);border-radius:16px;color:var(--green);font-size:0.7rem;cursor:pointer;transition:all 0.2s;font-family:'Outfit',sans-serif;}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--ink3);border:1px solid rgba(255,255,255,0.08);color:var(--cream);padding:10px 22px;border-radius:50px;font-size:0.8rem;transition:transform 0.35s cubic-bezier(.34,1.4,.64,1);z-index:99999;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,0.5);pointer-events:none;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* PROGRESS SCREEN */
+#progressModal{
+  position:fixed;inset:0;z-index:9000;
+  background:rgba(10,10,15,0.92);backdrop-filter:blur(20px);
+  display:none;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;
+}
+#progressModal.open{display:flex;}
+.pm-emoji{font-size:4rem;margin-bottom:24px;animation:peb 1s ease-in-out infinite alternate;}
+@keyframes peb{0%{transform:scale(1) rotate(-3deg);}100%{transform:scale(1.1) rotate(3deg);}}
+.pm-title{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--cream);margin-bottom:6px;}
+.pm-sub{font-size:0.85rem;color:var(--muted);margin-bottom:28px;font-weight:300;}
+.pm-track{width:320px;max-width:88vw;height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;}
+.pm-fill{height:100%;background:linear-gradient(90deg,var(--rose),var(--gold),var(--gold2));border-radius:2px;transition:width 0.3s ease;}
+.pm-pct{font-size:0.75rem;color:var(--gold);margin-top:8px;letter-spacing:2px;}
+
+/* Drive connect */
+.drive-connect-box{display:flex;flex-direction:column;align-items:center;gap:14px;padding:20px 0;}
+.dcb-icon{font-size:3rem;}
+.dcb-title{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--cream);}
+.dcb-desc{font-size:0.82rem;color:var(--muted);text-align:center;max-width:320px;line-height:1.6;}
+.btn-g-drive{
+  padding:12px 28px;
+  background:linear-gradient(135deg,#4285f4,#34a853);
+  color:#fff;font-weight:700;font-size:0.9rem;
+  border:none;border-radius:50px;cursor:pointer;
+  transition:all 0.25s;font-family:'Outfit',sans-serif;
+  display:flex;align-items:center;gap:8px;
+  box-shadow:0 4px 18px rgba(66,133,244,0.3);
+}
+.btn-g-drive:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(66,133,244,0.45);}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .nav{padding:0 20px;}
+  .hero{grid-template-columns:1fr;padding:120px 20px 60px;gap:40px;}
+  .hero-right{display:none;}
+  .features-section,.how-section,.pricing-section{padding:60px 20px;}
+  .dash-sidebar{width:60px;}
+  .dash-sidebar .ds-item span,.dash-sidebar .ds-uname,.dash-sidebar .ds-uemail,.dash-sidebar .ds-logo .logo-text,.dash-sidebar .ds-section-label{display:none;}
+  .dash-main{margin-left:60px;}
+  .music-bar{left:60px;}
+  .ds-logo{padding:20px 14px;justify-content:center;}
+  .ds-item{justify-content:center;padding:10px;}
+  .ds-item-icon{width:auto;}
+}
+</style>
+</head>
+<body>
+
+<!-- ════ LANDING ════ -->
+<div id="landingScreen" class="screen active">
+  <nav class="nav">
+    <div class="nav-logo">
+      <div class="nav-logo-dot"></div>
+      FlipFolio
+    </div>
+    <div class="nav-links">
+      <button class="nav-link" onclick="scrollTo('#features')">Features</button>
+      <button class="nav-link" onclick="scrollTo('#how')">How it Works</button>
+      <button class="nav-link" onclick="scrollTo('#pricing')">Pricing</button>
+      <button class="nav-cta" onclick="goToDashboard()">Start Free →</button>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <div class="hero-left">
+      <div class="hero-badge"><span></span>Wedding Album Platform</div>
+      <h1 class="hero-h1">
+        Turn PDFs into<br/>
+        <em>Stunning Flipbooks</em><br/>
+        <span class="line2">Share in Seconds.</span>
+      </h1>
+      <p class="hero-p">Upload your wedding album PDF, customize with animations and music, then publish a clean link for your clients — no apps, no downloads, just beautiful memories.</p>
+      <div class="hero-btns">
+        <button class="btn-primary" onclick="goToDashboard()">🚀 Start Free <span style="opacity:0.7;font-weight:400">— No signup</span></button>
+        <button class="btn-secondary" onclick="demoMode()">▶ See Demo</button>
+      </div>
+      <div class="hero-stats">
+        <div class="hs"><div class="hs-num">6+</div><div class="hs-lbl">Animations</div></div>
+        <div class="hs"><div class="hs-num">∞</div><div class="hs-lbl">Albums</div></div>
+        <div class="hs"><div class="hs-num">QR</div><div class="hs-lbl">Auto-generated</div></div>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="book-mockup">
+        <div class="bm-book">
+          <div class="bm-page">
+            <div class="bm-icon">📷</div>
+            <div class="bm-text">Album</div>
+          </div>
+          <div class="bm-spine"></div>
+          <div class="bm-page2">
+            <div class="bm-lines">
+              <div class="bm-line"></div>
+              <div class="bm-line"></div>
+              <div class="bm-line"></div>
+            </div>
+          </div>
+        </div>
+        <div class="float-card fc1">
+          <div class="fc-label">Latest Album</div>
+          <div class="fc-value">Priya & Rahul 💍</div>
+          <div class="fc-sub">✓ Published • 48 pages</div>
+        </div>
+        <div class="float-card fc2">
+          <div class="fc-label">QR Generated</div>
+          <div class="fc-value">Share Instantly</div>
+          <div class="fc-sub">📱 Scan to open</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="features" class="features-section">
+    <div class="section-eyebrow">Everything you need</div>
+    <h2 class="section-title">Built for Wedding Photographers</h2>
+    <p class="section-sub">A complete platform to create, manage, and share digital wedding albums with your clients.</p>
+    <div class="features-grid">
+      <div class="feat" style="--feat-color:var(--gold)">
+        <div class="feat-icon">📖</div>
+        <div class="feat-title">Realistic Page Flip</div>
+        <div class="feat-desc">6 stunning animations — Flip, Slide, Fade, Zoom, Curl, Bounce. Each feels like a real book.</div>
+      </div>
+      <div class="feat" style="--feat-color:var(--violet)">
+        <div class="feat-icon">☁️</div>
+        <div class="feat-title">Google Drive Storage</div>
+        <div class="feat-desc">Albums save automatically to your Google Drive. Permanent links that work forever.</div>
+      </div>
+      <div class="feat" style="--feat-color:var(--rose)">
+        <div class="feat-icon">🎵</div>
+        <div class="feat-title">Background Music</div>
+        <div class="feat-desc">4 built-in romantic tracks or upload your own. Clients can mute with one tap.</div>
+      </div>
+      <div class="feat" style="--feat-color:var(--teal)">
+        <div class="feat-icon">📱</div>
+        <div class="feat-title">QR Code + Link</div>
+        <div class="feat-desc">Every album gets a unique QR code and shareable link. Print it or text it.</div>
+      </div>
+      <div class="feat" style="--feat-color:var(--green)">
+        <div class="feat-icon">🚀</div>
+        <div class="feat-title">One-Tap Publish</div>
+        <div class="feat-desc">Publish to client with one button. They see a clean viewer — no settings or tools.</div>
+      </div>
+      <div class="feat" style="--feat-color:var(--gold2)">
+        <div class="feat-icon">🎨</div>
+        <div class="feat-title">5 Stage Themes</div>
+        <div class="feat-desc">Dark, Rose, Forest, Ocean, Violet, Cream — set the perfect mood for each album.</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="how" class="how-section">
+    <div class="section-eyebrow">Simple workflow</div>
+    <h2 class="section-title">3 Steps to a Shared Album</h2>
+    <div class="steps-row">
+      <div class="step">
+        <div class="step-n">📄</div>
+        <div class="step-title">Upload PDF</div>
+        <div class="step-desc">Upload your wedding album PDF. It converts to a beautiful flipbook instantly.</div>
+      </div>
+      <div class="step">
+        <div class="step-n">✨</div>
+        <div class="step-title">Customize</div>
+        <div class="step-desc">Choose animations, background theme, and music to set the perfect mood.</div>
+      </div>
+      <div class="step">
+        <div class="step-n">🚀</div>
+        <div class="step-title">Publish</div>
+        <div class="step-desc">Hit Publish — share the link or QR code with your client. Done!</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="pricing" class="pricing-section">
+    <div class="section-eyebrow">Simple pricing</div>
+    <h2 class="section-title">Plans for Every Photographer</h2>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-plan">Starter</div>
+        <div class="price-amount"><sup>₹</sup><span class="free">Free</span></div>
+        <div class="price-period">Forever free</div>
+        <ul class="price-features">
+          <li>3 albums at a time</li>
+          <li>All 6 animations</li>
+          <li>QR + Share link</li>
+          <li>Background music</li>
+          <li class="no">Google Drive sync</li>
+          <li class="no">Custom branding</li>
+        </ul>
+        <button class="btn-plan btn-plan-outline" onclick="goToDashboard()">Get Started</button>
+      </div>
+      <div class="price-card popular">
+        <div class="popular-badge">Popular</div>
+        <div class="price-plan">Professional</div>
+        <div class="price-amount"><sup>₹</sup>499</div>
+        <div class="price-period">per month</div>
+        <ul class="price-features">
+          <li>Unlimited albums</li>
+          <li>All 6 animations</li>
+          <li>QR + Share link</li>
+          <li>Background music</li>
+          <li>Google Drive sync</li>
+          <li class="no">Custom branding</li>
+        </ul>
+        <button class="btn-plan btn-plan-fill" onclick="goToDashboard()">Start Free Trial</button>
+      </div>
+      <div class="price-card">
+        <div class="price-plan">Studio</div>
+        <div class="price-amount"><sup>₹</sup>999</div>
+        <div class="price-period">per month</div>
+        <ul class="price-features">
+          <li>Unlimited albums</li>
+          <li>All 6 animations</li>
+          <li>QR + Share link</li>
+          <li>Background music</li>
+          <li>Google Drive sync</li>
+          <li>Custom branding</li>
+        </ul>
+        <button class="btn-plan btn-plan-outline" onclick="goToDashboard()">Contact Us</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-logo">FlipFolio</div>
+    <div class="footer-copy">© 2025 FlipFolio. Built for wedding photographers.</div>
+    <div class="footer-links">
+      <span class="footer-link">Privacy</span>
+      <span class="footer-link">Terms</span>
+      <span class="footer-link">Contact</span>
+    </div>
+  </footer>
+</div>
+
+<!-- ════ DASHBOARD ════ -->
+<div id="dashboardScreen" class="screen">
+  <div class="dash-layout">
+    <div class="dash-sidebar">
+      <div class="ds-logo">
+        <div class="nav-logo-dot ds-logo-dot"></div>
+        <span class="logo-text">FlipFolio</span>
+      </div>
+      <div class="ds-nav">
+        <div class="ds-section-label">Main</div>
+        <button class="ds-item active" onclick="showDashTab('albums')">
+          <span class="ds-item-icon">📚</span><span>My Albums</span>
+        </button>
+        <button class="ds-item" onclick="showDashTab('upload')">
+          <span class="ds-item-icon">➕</span><span>New Album</span>
+        </button>
+        <div class="ds-section-label">Settings</div>
+        <button class="ds-item" onclick="showDashTab('drive')">
+          <span class="ds-item-icon">☁️</span><span>Google Drive</span>
+        </button>
+        <button class="ds-item" onclick="goToLanding()">
+          <span class="ds-item-icon">🏠</span><span>Home</span>
+        </button>
+      </div>
+      <div class="ds-bottom">
+        <div class="ds-user">
+          <div class="ds-avatar" id="dsAvatar">V</div>
+          <div>
+            <div class="ds-uname" id="dsUname">Venkatakishore</div>
+            <div class="ds-uemail" id="dsUemail">Photographer</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-main">
+      <div class="dash-topbar">
+        <div class="dt-title" id="dashTitle">My Albums</div>
+        <div class="dt-actions">
+          <div class="albums-search">
+            <span>🔍</span>
+            <input type="text" id="searchInput" placeholder="Search albums…" oninput="filterAlbums(this.value)"/>
+          </div>
+          <button class="btn-upload-new" onclick="openUploadModal()">+ New Album</button>
+        </div>
+      </div>
+
+      <div class="dash-content">
+        <!-- Stats -->
+        <div class="stats-row">
+          <div class="stat-card" style="--sc-color:var(--gold)">
+            <div class="sc-label">Total Albums</div>
+            <div class="sc-value" id="statTotal">0</div>
+            <div class="sc-change">Your portfolio</div>
+          </div>
+          <div class="stat-card" style="--sc-color:var(--green)">
+            <div class="sc-label">Published</div>
+            <div class="sc-value" id="statPublished">0</div>
+            <div class="sc-change">Shared with clients</div>
+          </div>
+          <div class="stat-card" style="--sc-color:var(--violet)">
+            <div class="sc-label">Drafts</div>
+            <div class="sc-value" id="statDrafts">0</div>
+            <div class="sc-change">In progress</div>
+          </div>
+          <div class="stat-card" style="--sc-color:var(--teal)">
+            <div class="sc-label">Drive Status</div>
+            <div class="sc-value" id="statDrive" style="font-size:1rem;padding-top:4px;">Not connected</div>
+            <div class="sc-change" id="statDriveUser">Connect Drive →</div>
+          </div>
+        </div>
+
+        <!-- Albums -->
+        <div class="albums-header">
+          <div class="albums-title">All Albums</div>
+        </div>
+        <div class="albums-grid" id="albumsGrid">
+          <div class="empty-state">
+            <div class="es-icon">📭</div>
+            <div class="es-title">No albums yet</div>
+            <div class="es-desc">Upload your first wedding album PDF to get started. It takes less than a minute!</div>
+            <button class="btn-primary" onclick="openUploadModal()">+ Upload First Album</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ EDITOR ════ -->
+<div id="editorScreen" class="screen">
+  <div class="editor-layout">
+    <div class="editor-topbar">
+      <div class="et-left">
+        <button class="et-back" onclick="backToDashboard()" title="Back">←</button>
+        <div class="et-album-name" id="etAlbumName">Album</div>
+      </div>
+      <div class="et-center">
+        <button class="et-btn" id="etFirst" onclick="goFirst()">⏮</button>
+        <button class="et-btn" id="etPrev" onclick="goPrev()">◀ Prev</button>
+        <button class="et-btn" id="etNext" onclick="goNext()">Next ▶</button>
+        <button class="et-btn" id="etLast" onclick="goLast()">⏭</button>
+      </div>
+      <div class="et-right">
+        <button class="et-btn" id="sidebarToggle" onclick="toggleEditorSidebar()">☰ Settings</button>
+        <div class="et-sep"></div>
+        <button class="et-btn" id="partBtn" onclick="toggleParticles()">✦ Effects</button>
+        <button class="et-btn" onclick="toggleFull()">⛶</button>
+        <div class="et-sep"></div>
+        <button class="et-share-btn" onclick="openShareModal()">🔗 Share</button>
+        <button class="et-publish-btn" onclick="openPublishModal()">🚀 Publish</button>
+      </div>
+    </div>
+
+    <div class="editor-body">
+      <div class="editor-sidebar" id="editorSidebar">
+        <div class="esi">
+          <!-- Drive info -->
+          <div class="es-sec" id="esDriveInfo" style="display:none;">
+            <div class="es-lbl">Google Drive</div>
+            <div style="background:rgba(77,184,128,0.07);border:1px solid rgba(77,184,128,0.18);border-radius:9px;padding:10px;">
+              <div style="font-size:0.73rem;color:var(--green);margin-bottom:3px;">✓ Saved to Drive</div>
+              <div style="font-size:0.62rem;color:var(--muted);word-break:break-all;" id="esDriveLink">—</div>
+              <button onclick="window.open(currentDriveUrl,'_blank')" style="margin-top:6px;width:100%;padding:6px;background:rgba(77,184,128,0.08);border:1px solid rgba(77,184,128,0.18);border-radius:6px;color:var(--green);font-size:0.67rem;cursor:pointer;font-family:'Outfit',sans-serif;">Open ↗</button>
+            </div>
+          </div>
+          <!-- Animation -->
+          <div class="es-sec">
+            <div class="es-lbl">Page Animation</div>
+            <div class="ag">
+              <div class="ag-item sel" onclick="setAnim('flip',this)"><span class="ag-icon">📄</span><div class="ag-name">Flip</div></div>
+              <div class="ag-item" onclick="setAnim('slide',this)"><span class="ag-icon">➡️</span><div class="ag-name">Slide</div></div>
+              <div class="ag-item" onclick="setAnim('fade',this)"><span class="ag-icon">🌫️</span><div class="ag-name">Fade</div></div>
+              <div class="ag-item" onclick="setAnim('zoom',this)"><span class="ag-icon">🔍</span><div class="ag-name">Zoom</div></div>
+              <div class="ag-item" onclick="setAnim('curl',this)"><span class="ag-icon">🌀</span><div class="ag-name">Curl</div></div>
+              <div class="ag-item" onclick="setAnim('bounce',this)"><span class="ag-icon">⚡</span><div class="ag-name">Bounce</div></div>
+            </div>
+          </div>
+          <!-- Theme -->
+          <div class="es-sec">
+            <div class="es-lbl">Stage Theme</div>
+            <div class="tg">
+              <div class="tsw sel" style="background:#0a0a0f;" onclick="setTheme('ink',this)"><span>Dark</span></div>
+              <div class="tsw" style="background:radial-gradient(#1a0c0c,#0a0506);" onclick="setTheme('rose',this)"><span>Rose</span></div>
+              <div class="tsw" style="background:radial-gradient(#0a100c,#060808);" onclick="setTheme('forest',this)"><span>Forest</span></div>
+              <div class="tsw" style="background:radial-gradient(#080e1a,#060608);" onclick="setTheme('ocean',this)"><span>Ocean</span></div>
+              <div class="tsw" style="background:radial-gradient(#100a1a,#080608);" onclick="setTheme('violet',this)"><span>Violet</span></div>
+              <div class="tsw" style="background:#ede8e0;" onclick="setTheme('cream',this)"><span style="color:#555;">Cream</span></div>
+            </div>
+          </div>
+          <!-- Music -->
+          <div class="es-sec">
+            <div class="es-lbl">Music</div>
+            <div class="ml" id="musicList">
+              <div class="ml-item" onclick="playTrack(0)"><div class="ml-icon" style="background:rgba(212,168,67,0.12);">🎻</div><div class="ml-info"><div class="ml-name">Wedding Waltz</div><div class="ml-artist">Classical</div></div></div>
+              <div class="ml-item" onclick="playTrack(1)"><div class="ml-icon" style="background:rgba(201,96,96,0.12);">🌹</div><div class="ml-info"><div class="ml-name">Romantic Piano</div><div class="ml-artist">Ambient</div></div></div>
+              <div class="ml-item" onclick="playTrack(2)"><div class="ml-icon" style="background:rgba(59,168,160,0.12);">🌊</div><div class="ml-info"><div class="ml-name">Ocean Breeze</div><div class="ml-artist">Nature</div></div></div>
+              <div class="ml-item" onclick="playTrack(3)"><div class="ml-icon" style="background:rgba(77,184,128,0.12);">🌿</div><div class="ml-info"><div class="ml-name">Garden Strings</div><div class="ml-artist">Orchestral</div></div></div>
+            </div>
+            <button class="ml-upload" onclick="document.getElementById('musicInput').click()">+ Upload Music</button>
+            <div class="vol-row">
+              <span>🔈</span>
+              <input type="range" id="volSlider" min="0" max="1" step="0.05" value="0.6" oninput="setVolume(this.value)" style="flex:1;-webkit-appearance:none;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;outline:none;"/>
+              <span>🔊</span>
+            </div>
+          </div>
+          <!-- Thumbs -->
+          <div class="es-sec">
+            <div class="es-lbl">Pages</div>
+            <div class="thumb-strip-v" id="thumbStrip"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stage -->
+      <div class="editor-stage bg-ink" id="editorStage">
+        <div class="book-wrap">
+          <div class="book" id="theBook">
+            <div class="bk-l"><canvas id="canvasL" class="bk-pc"></canvas><div class="bk-pgn" id="pgnL"></div></div>
+            <div class="bk-spine"></div>
+            <div class="bk-r"><canvas id="canvasR" class="bk-pc"></canvas><div class="bk-pgn" id="pgnR"></div></div>
+          </div>
+        </div>
+        <div class="controls">
+          <button class="cb" id="cbFirst" onclick="goFirst()">⏮</button>
+          <button class="cb" id="cbPrev" onclick="goPrev()">◀</button>
+          <div class="pi"><strong id="pgCur">1</strong><span style="color:var(--muted2);margin:0 4px;">/</span><strong id="pgTotal">—</strong></div>
+          <button class="cb" id="cbNext" onclick="goNext()">▶</button>
+          <button class="cb" id="cbLast" onclick="goLast()">⏭</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Music bar -->
+  <div class="music-bar" id="musicBar">
+    <div class="mb-thumb" id="mbThumb">🎵</div>
+    <div class="mb-info"><div class="mb-name" id="mbName">No track</div><div class="mb-artist" id="mbArtist">—</div></div>
+    <div class="mb-ctrls">
+      <button class="mbc" onclick="prevTrack()">⏮</button>
+      <button class="mbc on" id="ppBtn" onclick="togglePP()">⏸</button>
+      <button class="mbc" onclick="nextTrack()">⏭</button>
+    </div>
+    <div class="mprog"><div class="mpf" id="mpf" style="width:0%"></div></div>
+    <div style="display:flex;align-items:center;gap:5px;"><span>🔈</span><input type="range" min="0" max="1" step="0.05" value="0.6" oninput="setVolume(this.value)" style="width:60px;-webkit-appearance:none;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;outline:none;"/></div>
+    <button class="mbc" onclick="stopMusic()">✕</button>
+  </div>
+</div>
+
+<!-- ════ CLIENT VIEW ════ -->
+<div id="clientScreen">
+  <div class="client-header">
+    <div class="ch-logo">FlipFolio</div>
+    <div class="ch-album" id="chAlbumName">Wedding Album</div>
+    <button class="ch-mute" id="chMute" onclick="toggleClientMute()">🔊</button>
+  </div>
+  <div class="client-stage">
+    <div class="client-book-wrap">
+      <div class="client-book" id="clientBook">
+        <div class="cb-l"><canvas id="cbCanvasL" class="cb-pc"></canvas><div class="cb-pgn" id="cbPgnL"></div></div>
+        <div class="cb-spine"></div>
+        <div class="cb-r"><canvas id="cbCanvasR" class="cb-pc"></canvas><div class="cb-pgn" id="cbPgnR"></div></div>
+      </div>
+    </div>
+    <div class="client-controls">
+      <button class="cc-btn" id="ccFirst" onclick="cvGoFirst()">⏮</button>
+      <button class="cc-btn" id="ccPrev" onclick="cvGoPrev()">◀</button>
+      <div class="cc-pi"><strong id="cvCur">1</strong><span style="margin:0 4px;opacity:0.4;">/</span><strong id="cvTotal">—</strong></div>
+      <button class="cc-btn" id="ccNext" onclick="cvGoNext()">▶</button>
+      <button class="cc-btn" id="ccLast" onclick="cvGoLast()">⏭</button>
+    </div>
+  </div>
+  <div class="client-wm">FlipFolio Pro</div>
+</div>
+
+<!-- HIDDEN INPUTS -->
+<input type="file" id="pdfInput" accept=".pdf" style="display:none;"/>
+<input type="file" id="musicInput" accept="audio/*" style="display:none;"/>
+
+<!-- PROGRESS MODAL -->
+<div id="progressModal">
+  <div class="pm-emoji" id="pmEmoji">📖</div>
+  <div class="pm-title" id="pmTitle">Rendering Album…</div>
+  <div class="pm-sub" id="pmSub">Please wait</div>
+  <div class="pm-track"><div class="pm-fill" id="pmFill"></div></div>
+  <div class="pm-pct" id="pmPct">0%</div>
+</div>
+
+<!-- UPLOAD MODAL -->
+<div class="modal-overlay" id="uploadModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('uploadModal')">✕</button>
+    <div class="modal-title">Upload New Album</div>
+    <p class="modal-sub">Upload a PDF to create a beautiful flipbook album.</p>
+    <div class="upload-drop" id="uploadDrop" onclick="document.getElementById('pdfInput').click()">
+      <span class="ud-icon">📄</span>
+      <div class="ud-title">Drop PDF Here</div>
+      <div class="ud-sub">or click to browse your files</div>
+    </div>
+    <div class="upload-progress" id="uploadProgress">
+      <div class="up-label" id="upLabel">Uploading…</div>
+      <div class="up-track"><div class="up-fill" id="upFill"></div></div>
+      <div class="up-pct" id="upPct">0%</div>
+    </div>
+  </div>
+</div>
+
+<!-- SHARE MODAL -->
+<div class="modal-overlay" id="shareModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('shareModal')">✕</button>
+    <div class="modal-title">Share Album</div>
+    <p class="modal-sub">Anyone with this link or QR can view the flipbook.</p>
+    <div class="drive-banner" id="shareDriveBanner" style="display:none;">
+      <div class="db-icon">☁️</div>
+      <div class="db-text"><div class="db-title">Saved to Google Drive</div><div class="db-sub">This link is permanent</div></div>
+      <button class="db-open" onclick="window.open(currentDriveUrl,'_blank')">Open ↗</button>
+    </div>
+    <div class="tab-strip">
+      <button class="tab-s on" onclick="switchShareTab('link',this)">🔗 Link</button>
+      <button class="tab-s" onclick="switchShareTab('qr',this)">📱 QR Code</button>
+      <button class="tab-s" onclick="switchShareTab('embed',this)">🖥 Embed</button>
+    </div>
+    <div class="tab-panel on" id="stp-link">
+      <div class="link-box"><input type="text" id="shareUrlInput" readonly/><button class="copy-btn" id="copyShareBtn" onclick="copyShareUrl()">Copy</button></div>
+      <p class="link-tip" id="shareTip"><strong>💡 Tip:</strong> Connect Google Drive for a permanent global link.</p>
+    </div>
+    <div class="tab-panel" id="stp-qr">
+      <div class="qr-center"><div id="qrcode"></div><p style="font-size:0.75rem;color:var(--muted);">Scan to open album</p><button class="btn-dl-qr" onclick="dlQR()">⬇ Download QR</button></div>
+    </div>
+    <div class="tab-panel" id="stp-embed">
+      <div class="embed-area" id="embedArea"></div>
+      <button class="copy-btn" onclick="copyEmbed()">Copy Embed</button>
+    </div>
+  </div>
+</div>
+
+<!-- PUBLISH MODAL -->
+<div class="modal-overlay" id="publishModal">
+  <div class="modal-box pub-box">
+    <button class="modal-close" onclick="closeModal('publishModal')">✕</button>
+    <div class="modal-title">🚀 Publish to Client</div>
+    <p class="modal-sub">Creates a clean viewer — your client sees only the album.</p>
+    <div class="pub-what">
+      <div class="pw-title">Client will see</div>
+      <div class="pw-items">
+        <div class="pw-item"><span class="pw-yes">✓</span> Beautiful flipbook pages</div>
+        <div class="pw-item"><span class="pw-yes">✓</span> Prev / Next buttons + page number</div>
+        <div class="pw-item"><span class="pw-yes">✓</span> Background music + Mute button</div>
+        <div class="pw-item"><span class="pw-no">✗</span> No settings or controls</div>
+        <div class="pw-item"><span class="pw-no">✗</span> No edit or share buttons</div>
+      </div>
+    </div>
+    <div class="pub-name-label">Album Name for Client</div>
+    <input class="pub-name-input" id="pubNameInput" type="text" placeholder="e.g. Priya & Rahul Wedding 2025"/>
+    <div class="pub-btns">
+      <button class="btn-cancel" onclick="closeModal('publishModal')">Cancel</button>
+      <button class="btn-pub-go" onclick="launchClient()">🚀 Launch Client View</button>
+    </div>
+  </div>
+</div>
+
+<!-- DRIVE MODAL -->
+<div class="modal-overlay" id="driveModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('driveModal')">✕</button>
+    <div class="modal-title">Google Drive</div>
+    <p class="modal-sub">Connect your Drive to save albums permanently and share global links.</p>
+    <div class="drive-connect-box" id="driveConnectBox">
+      <div class="dcb-icon">☁️</div>
+      <div class="dcb-title">Connect Google Drive</div>
+      <div class="dcb-desc">Albums will be saved to a "FlipFolio Albums" folder in your Drive. Anyone with the link can view them.</div>
+      <button class="btn-g-drive" onclick="connectDrive()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M4.433 22.396l3.464-6h12.124l-3.464 6H4.433zm5.196-9l-6.062 10.5L.5 20.5 9.433 5l3.464 6H9.629zm9.371-7.5L23.5 16.396H11.252L7.788 10.5 9.433 7.5h9.567zM12 5.5l-1.645-2.854L12 0l1.645 2.854L12 5.5z"/></svg>
+        Sign in with Google
+      </button>
+    </div>
+    <div id="driveConnectedBox" style="display:none;text-align:center;padding:20px 0;">
+      <div style="font-size:3rem;margin-bottom:12px;">✅</div>
+      <div style="font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--cream);margin-bottom:6px;">Drive Connected!</div>
+      <div style="font-size:0.82rem;color:var(--muted);" id="driveConnectedEmail">—</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ════════════════════════════════════
+// CONFIG
+// ════════════════════════════════════
+const GOOGLE_CLIENT_ID='769785927554-vutb9bqc1bp49pfvjfg4esgir1mn44g4.apps.googleusercontent.com';
+const SCOPES='https://www.googleapis.com/auth/drive.file';
+
+// ════════════════════════════════════
+// STATE
+// ════════════════════════════════════
+let accessToken=null,userEmail='',currentDriveUrl='',currentDriveId='';
+let albums=[]; // [{id,name,pages,thumb,status,driveUrl,driveId,anim,theme,track,date}]
+let currentAlbumIdx=-1;
+let pdf=null,totalPages=0,spread=0,renderedPages=[];
+let currentAnim='flip',currentTheme='ink';
+let animating=false,particlesOn=false,particleInterval=null;
+let audioCtx=null,audioEl=null,currentTrackIdx=-1,isPlaying=false;
+let clientMuted=false,cvSpread=0,cvAnimating=false;
+let sidebarOpen=true;
+
+const TRACKS=[
+  {name:'Wedding Waltz',artist:'Classical',icon:'🎻',freq:261},
+  {name:'Romantic Piano',artist:'Ambient',icon:'🌹',freq:293},
+  {name:'Ocean Breeze',artist:'Nature',icon:'🌊',freq:329},
+  {name:'Garden Strings',artist:'Orchestral',icon:'🌿',freq:349},
+];
+
+// ════════════════════════════════════
+// SCREEN NAVIGATION
+// ════════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById(id);
+  if(el) el.classList.add('active');
+  window.scrollTo(0,0);
+}
+function goToLanding(){showScreen('landingScreen');}
+function goToDashboard(){showScreen('dashboardScreen');refreshDashboard();}
+function backToDashboard(){showScreen('dashboardScreen');refreshDashboard();stopMusic();}
+function scrollTo(sel){document.querySelector(sel)?.scrollIntoView({behavior:'smooth'});}
+function demoMode(){
+  // Create a sample demo album
+  showToast('Loading demo album…');
+  goToDashboard();
+}
+
+// ════════════════════════════════════
+// DASHBOARD
+// ════════════════════════════════════
+function showDashTab(tab){
+  document.querySelectorAll('.ds-item').forEach((b,i)=>b.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('dashTitle').textContent=
+    tab==='albums'?'My Albums':tab==='upload'?'New Album':'Google Drive';
+  if(tab==='upload') openUploadModal();
+  if(tab==='drive') openModal('driveModal');
+}
+
+function refreshDashboard(){
+  const grid=document.getElementById('albumsGrid');
+  updateStats();
+  if(albums.length===0){
+    grid.innerHTML=`<div class="empty-state"><div class="es-icon">📭</div><div class="es-title">No albums yet</div><div class="es-desc">Upload your first wedding album PDF to get started!</div><button class="btn-primary" onclick="openUploadModal()">+ Upload First Album</button></div>`;
+    return;
+  }
+  grid.innerHTML=albums.map((a,i)=>`
+    <div class="album-card" onclick="openAlbum(${i})">
+      <div class="album-thumb">
+        ${a.thumb?`<canvas id="th_${a.id}" width="1" height="1" style="width:100%;height:100%;display:block;object-fit:cover;"></canvas>`:'<div class="album-thumb-placeholder"><div class="atp-icon">📖</div><div class="atp-text">Album</div></div>'}
+        <div class="album-status ${a.status==='published'?'status-published':'status-draft'}">${a.status==='published'?'Published':'Draft'}</div>
+      </div>
+      <div class="album-info">
+        <div class="album-name">${a.name}</div>
+        <div class="album-meta"><span>${a.pages} pages</span><span>·</span><span>${a.date}</span></div>
+      </div>
+      <div class="album-actions" onclick="event.stopPropagation()">
+        <button class="aa-btn aa-view" onclick="openAlbum(${i})">👁 View</button>
+        <button class="aa-btn aa-publish" onclick="quickPublish(${i})">🚀 Publish</button>
+        <button class="aa-btn aa-share" onclick="quickShare(${i})">🔗 Share</button>
+        <button class="aa-btn aa-delete" onclick="deleteAlbum(${i})">🗑</button>
+      </div>
+    </div>
+  `).join('');
+  // Draw thumbnails
+  albums.forEach((a,i)=>{
+    if(a.thumb){
+      const c=document.getElementById('th_'+a.id);
+      if(c){c.width=a.thumb.width;c.height=a.thumb.height;c.getContext('2d').drawImage(a.thumb,0,0);}
+    }
+  });
+}
+
+function updateStats(){
+  document.getElementById('statTotal').textContent=albums.length;
+  document.getElementById('statPublished').textContent=albums.filter(a=>a.status==='published').length;
+  document.getElementById('statDrafts').textContent=albums.filter(a=>a.status==='draft').length;
+  if(accessToken){
+    document.getElementById('statDrive').textContent='✓ Connected';
+    document.getElementById('statDrive').style.color='var(--green)';
+    document.getElementById('statDriveUser').textContent=userEmail;
+  }
+}
+
+function filterAlbums(q){
+  document.querySelectorAll('.album-card').forEach(c=>{
+    const name=c.querySelector('.album-name')?.textContent.toLowerCase()||'';
+    c.style.display=name.includes(q.toLowerCase())?'':'none';
+  });
+}
+
+// ════════════════════════════════════
+// UPLOAD
+// ════════════════════════════════════
+function openUploadModal(){openModal('uploadModal');}
+
+document.getElementById('pdfInput').addEventListener('change',e=>{
+  const f=e.target.files[0];
+  if(f&&f.type==='application/pdf'){processUpload(f);}
+  e.target.value='';
+});
+document.getElementById('musicInput').addEventListener('change',e=>{
+  const f=e.target.files[0];if(f)loadCustomMusic(f);e.target.value='';
+});
+
+const ud=document.getElementById('uploadDrop');
+ud.addEventListener('dragover',e=>{e.preventDefault();ud.classList.add('drag');});
+ud.addEventListener('dragleave',()=>ud.classList.remove('drag'));
+ud.addEventListener('drop',e=>{e.preventDefault();ud.classList.remove('drag');const f=e.dataTransfer.files[0];if(f&&f.type==='application/pdf')processUpload(f);});
+
+async function processUpload(file){
+  const prog=document.getElementById('uploadProgress');
+  prog.style.display='block';
+  document.getElementById('upLabel').textContent='Reading PDF…';
+  document.getElementById('upFill').style.width='10%';
+  document.getElementById('upPct').textContent='10%';
+
+  // Upload to Drive if connected
+  let driveUrl='',driveId='';
+  if(accessToken){
+    document.getElementById('upLabel').textContent='Uploading to Google Drive…';
+    document.getElementById('upFill').style.width='25%';
+    document.getElementById('upPct').textContent='25%';
+    const res=await uploadToDrive(file);
+    if(res){driveUrl=res.url;driveId=res.id;}
+  }
+
+  closeModal('uploadModal');
+  prog.style.display='none';
+  document.getElementById('upFill').style.width='0%';
+
+  // Open progress modal
+  document.getElementById('progressModal').classList.add('open');
+  await renderAlbum(file,driveUrl,driveId);
+}
+
+async function renderAlbum(file,driveUrl,driveId){
+  document.getElementById('pmEmoji').textContent='📖';
+  document.getElementById('pmTitle').textContent='Rendering Album…';
+
+  const ab=await file.arrayBuffer();
+  const pdfDoc=await pdfjsLib.getDocument({data:ab}).promise;
+  const np=pdfDoc.numPages;
+  const pages=[];
+
+  for(let i=1;i<=np;i++){
+    const pct=Math.round(i/np*100);
+    document.getElementById('pmFill').style.width=pct+'%';
+    document.getElementById('pmPct').textContent=pct+'%';
+    document.getElementById('pmSub').textContent=`Page ${i} of ${np}`;
+    const c=await renderSinglePage(pdfDoc,i,900);
+    pages.push(c);
+  }
+
+  document.getElementById('pmFill').style.width='100%';
+  document.getElementById('pmEmoji').textContent='✨';
+  document.getElementById('pmTitle').textContent='Album Ready!';
+  await delay(600);
+  document.getElementById('progressModal').classList.remove('open');
+
+  const id=Date.now();
+  const album={
+    id,name:file.name.replace(/\.pdf$/i,''),
+    pages:np,renderedPages:pages,
+    thumb:pages[0]||null,
+    status:'draft',
+    driveUrl,driveId,
+    anim:'flip',theme:'ink',track:-1,
+    date:new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})
+  };
+  albums.unshift(album);
+  refreshDashboard();
+  showToast('✓ Album created! Click to open.');
+  // Auto open
+  currentAlbumIdx=0;
+  openAlbumData(albums[0]);
+}
+
+async function renderSinglePage(pdfDoc,n,w){
+  const page=await pdfDoc.getPage(n);
+  const vp=page.getViewport({scale:1});
+  const scale=w/vp.width;
+  const svp=page.getViewport({scale});
+  const c=document.createElement('canvas');
+  c.width=svp.width;c.height=svp.height;
+  const ctx=c.getContext('2d');
+  ctx.fillStyle='#f3ece0';ctx.fillRect(0,0,c.width,c.height);
+  await page.render({canvasContext:ctx,viewport:svp}).promise;
+  return c;
+}
+
+// ════════════════════════════════════
+// OPEN ALBUM
+// ════════════════════════════════════
+function openAlbum(idx){
+  currentAlbumIdx=idx;
+  openAlbumData(albums[idx]);
+}
+function openAlbumData(album){
+  pdf=null;
+  totalPages=album.pages;
+  renderedPages=album.renderedPages;
+  currentAnim=album.anim||'flip';
+  currentTheme=album.theme||'ink';
+  currentDriveUrl=album.driveUrl||'';
+  currentDriveId=album.driveId||'';
+
+  document.getElementById('etAlbumName').textContent=album.name;
+  document.getElementById('pubNameInput').value=album.name;
+
+  // Restore theme
+  document.getElementById('editorStage').className='editor-stage bg-'+currentTheme;
+  document.querySelectorAll('.ag-item').forEach(c=>c.classList.remove('sel'));
+  // Restore anim selection
+  const animMap={'flip':0,'slide':1,'fade':2,'zoom':3,'curl':4,'bounce':5};
+  const ags=document.querySelectorAll('.ag-item');
+  if(ags[animMap[currentAnim]]) ags[animMap[currentAnim]].classList.add('sel');
+
+  // Drive info
+  if(currentDriveUrl){
+    document.getElementById('esDriveInfo').style.display='block';
+    document.getElementById('esDriveLink').textContent=currentDriveUrl.substring(0,50)+'…';
+  } else {
+    document.getElementById('esDriveInfo').style.display='none';
+  }
+
+  // Build thumb strip
+  const ts=document.getElementById('thumbStrip');
+  ts.innerHTML='';
+  renderedPages.forEach((src,i)=>{
+    const item=document.createElement('div');item.className='tv-item';item.dataset.page=i;
+    const wrap=document.createElement('div');wrap.className='tv-canvas';
+    const c=document.createElement('canvas');c.width=src.width;c.height=src.height;
+    c.getContext('2d').drawImage(src,0,0);wrap.appendChild(c);
+    const lbl=document.createElement('div');lbl.className='tv-num';lbl.textContent='p.'+(i+1);
+    item.appendChild(wrap);item.appendChild(lbl);
+    item.addEventListener('click',()=>{spread=Math.floor(i/2);drawSpread(spread,null);});
+    ts.appendChild(item);
+  });
+
+  spread=0;
+  showScreen('editorScreen');
+  drawSpread(0,null);
+  showToast('📖 '+album.name);
+}
+
+// ════════════════════════════════════
+// SPREAD NAVIGATION
+// ════════════════════════════════════
+function drawSpread(s,dir){
+  const li=s*2,ri=s*2+1;
+  function draw(t,src){
+    if(!src){t.width=600;t.height=800;const ctx=t.getContext('2d');ctx.fillStyle='#f0e8d8';ctx.fillRect(0,0,600,800);return;}
+    t.width=src.width;t.height=src.height;t.getContext('2d').drawImage(src,0,0);
+  }
+  draw(document.getElementById('canvasL'),renderedPages[li]);
+  draw(document.getElementById('canvasR'),renderedPages[ri]);
+  document.getElementById('pgnL').textContent=li+1;
+  document.getElementById('pgnR').textContent=renderedPages[ri]?ri+1:'';
+  document.getElementById('pgCur').textContent=li+1;
+  document.getElementById('pgTotal').textContent=totalPages;
+  highlightThumb(li);
+  updateNavBtns();
+  if(dir){
+    const animClass=getAnimClass(currentAnim,dir,'bk');
+    const b=document.getElementById('theBook');
+    b.classList.add(animClass);
+    setTimeout(()=>b.classList.remove(animClass),650);
+  }
+}
+
+function getAnimClass(anim,dir,prefix){
+  const map={flip:'af',slide:'as',fade:'afd',zoom:'az',curl:'ac',bounce:'ab'};
+  return (map[anim]||'af')+'-'+dir;
+}
+
+function updateNavBtns(){
+  const tot=Math.ceil(totalPages/2);
+  ['cbFirst','cbPrev','etFirst','etPrev'].forEach(id=>{const e=document.getElementById(id);if(e)e.disabled=spread===0;});
+  ['cbNext','cbLast','etNext','etLast'].forEach(id=>{const e=document.getElementById(id);if(e)e.disabled=spread>=tot-1;});
+}
+function goNext(){if(!animating&&spread<Math.ceil(totalPages/2)-1){animating=true;spread++;drawSpread(spread,'next');if(currentAlbumIdx>=0)albums[currentAlbumIdx].lastSpread=spread;setTimeout(()=>{animating=false;},650);}}
+function goPrev(){if(!animating&&spread>0){animating=true;spread--;drawSpread(spread,'prev');setTimeout(()=>{animating=false;},650);}}
+function goFirst(){if(!animating){spread=0;drawSpread(0,'prev');}}
+function goLast(){const t=Math.ceil(totalPages/2)-1;if(!animating){spread=t;drawSpread(t,'next');}}
+
+document.addEventListener('keydown',e=>{
+  const cs=document.getElementById('clientScreen');
+  if(cs.classList.contains('active')){
+    if(e.key==='ArrowRight'||e.key==='ArrowDown')cvGoNext();
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp')cvGoPrev();
+    if(e.key==='Escape')cs.classList.remove('active');
+    return;
+  }
+  if(document.getElementById('editorScreen').classList.contains('active')){
+    if(e.key==='ArrowRight'||e.key==='ArrowDown')goNext();
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp')goPrev();
+  }
+});
+
+// Touch swipe on editor stage
+let touchX=0;
+document.getElementById('editorStage').addEventListener('touchstart',e=>{touchX=e.touches[0].clientX;},{passive:true});
+document.getElementById('editorStage').addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-touchX;if(Math.abs(dx)>50){dx<0?goNext():goPrev();}},{passive:true});
+
+// ════════════════════════════════════
+// THUMBNAILS
+// ════════════════════════════════════
+function highlightThumb(pi){
+  document.querySelectorAll('.tv-item').forEach((t,i)=>t.classList.toggle('active',i===pi||i===pi+1));
+  const a=document.querySelector('.tv-item.active');if(a)a.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// ════════════════════════════════════
+// SETTINGS
+// ════════════════════════════════════
+function toggleEditorSidebar(){
+  sidebarOpen=!sidebarOpen;
+  document.getElementById('editorSidebar').classList.toggle('collapsed',!sidebarOpen);
+  document.getElementById('sidebarToggle').classList.toggle('on',sidebarOpen);
+}
+function setAnim(a,card){
+  currentAnim=a;
+  document.querySelectorAll('.ag-item').forEach(c=>c.classList.remove('sel'));
+  card.classList.add('sel');
+  if(currentAlbumIdx>=0)albums[currentAlbumIdx].anim=a;
+  showToast('Animation: '+a.charAt(0).toUpperCase()+a.slice(1));
+}
+function setTheme(t,sw){
+  currentTheme=t;
+  document.getElementById('editorStage').className='editor-stage bg-'+t;
+  document.querySelectorAll('.tsw').forEach(s=>s.classList.remove('sel'));
+  sw.classList.add('sel');
+  if(currentAlbumIdx>=0)albums[currentAlbumIdx].theme=t;
+  showToast('Theme: '+t.charAt(0).toUpperCase()+t.slice(1));
+}
+
+// ════════════════════════════════════
+// PARTICLES
+// ════════════════════════════════════
+function toggleParticles(){
+  particlesOn=!particlesOn;
+  document.getElementById('partBtn').classList.toggle('on',particlesOn);
+  if(particlesOn){showToast('Effects on ✦');particleInterval=setInterval(spawnP,600);}
+  else{clearInterval(particleInterval);document.querySelectorAll('.sp').forEach(p=>p.remove());showToast('Effects off');}
+}
+const PS=['✦','✧','❋','✿','❀','♡','❤','✽','⋆','·'];
+function spawnP(){
+  const stage=document.getElementById('editorStage');
+  const p=document.createElement('div');p.className='sp';
+  p.textContent=PS[Math.floor(Math.random()*PS.length)];
+  p.style.cssText=`left:${Math.random()*100}%;font-size:${0.5+Math.random()*1.2}rem;color:${['var(--gold)','var(--rose)','var(--cream)','rgba(212,168,67,0.5)'][Math.floor(Math.random()*4)]};animation-duration:${4+Math.random()*7}s;`;
+  stage.appendChild(p);setTimeout(()=>p.remove(),12000);
+}
+
+// ════════════════════════════════════
+// FULLSCREEN
+// ════════════════════════════════════
+function toggleFull(){
+  const el=document.getElementById('editorScreen');
+  if(!document.fullscreenElement)el.requestFullscreen?.().catch(()=>{});
+  else document.exitFullscreen?.();
+}
+
+// ════════════════════════════════════
+// MUSIC
+// ════════════════════════════════════
+function ensureAudio(){if(!audioEl){audioEl=new Audio();audioEl.loop=true;audioEl.volume=0.6;audioEl.addEventListener('timeupdate',()=>{if(audioEl.duration)document.getElementById('mpf').style.width=(audioEl.currentTime/audioEl.duration*100)+'%';});}}
+function playTrack(idx){
+  ensureAudio();currentTrackIdx=idx;
+  if(audioCtx){audioCtx.close();audioCtx=null;}
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  const t=TRACKS[idx];
+  const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  const o2=audioCtx.createOscillator(),g2=audioCtx.createGain();
+  o.type='sine';o.frequency.value=t.freq;g.gain.value=0.07;
+  o2.type='sine';o2.frequency.value=t.freq*1.498;g2.gain.value=0.035;
+  o.connect(g);g.connect(audioCtx.destination);o2.connect(g2);g2.connect(audioCtx.destination);
+  o.start();o2.start();isPlaying=true;
+  document.getElementById('mbName').textContent=t.name;
+  document.getElementById('mbArtist').textContent=t.artist;
+  document.getElementById('mbThumb').textContent=t.icon;
+  document.getElementById('musicBar').classList.add('vis');
+  document.getElementById('ppBtn').textContent='⏸';
+  document.querySelectorAll('.ml-item').forEach((m,i)=>m.classList.toggle('playing',i===idx));
+  if(currentAlbumIdx>=0)albums[currentAlbumIdx].track=idx;
+  showToast('♫ '+t.name);
+}
+function loadCustomMusic(file){
+  ensureAudio();if(audioCtx){audioCtx.close();audioCtx=null;}
+  audioEl.src=URL.createObjectURL(file);audioEl.play();isPlaying=true;
+  document.getElementById('mbName').textContent=file.name.replace(/\.[^.]+$/,'');
+  document.getElementById('mbArtist').textContent='Custom';
+  document.getElementById('mbThumb').textContent='🎵';
+  document.getElementById('musicBar').classList.add('vis');
+  document.getElementById('ppBtn').textContent='⏸';
+  showToast('♫ Playing custom music');
+}
+function togglePP(){
+  if(audioCtx){if(isPlaying){audioCtx.suspend();isPlaying=false;document.getElementById('ppBtn').textContent='▶';}else{audioCtx.resume();isPlaying=true;document.getElementById('ppBtn').textContent='⏸';}}
+  else if(audioEl){if(isPlaying){audioEl.pause();isPlaying=false;document.getElementById('ppBtn').textContent='▶';}else{audioEl.play();isPlaying=true;document.getElementById('ppBtn').textContent='⏸';}}
+}
+function stopMusic(){if(audioCtx){audioCtx.close();audioCtx=null;}if(audioEl){audioEl.pause();audioEl.src='';}isPlaying=false;document.getElementById('musicBar').classList.remove('vis');document.querySelectorAll('.ml-item').forEach(m=>m.classList.remove('playing'));currentTrackIdx=-1;}
+function prevTrack(){if(currentTrackIdx>0)playTrack(currentTrackIdx-1);}
+function nextTrack(){if(currentTrackIdx<TRACKS.length-1)playTrack(currentTrackIdx+1);}
+function setVolume(v){if(audioEl)audioEl.volume=v;document.getElementById('volSlider').value=v;}
+
+// ════════════════════════════════════
+// SHARE
+// ════════════════════════════════════
+function buildViewerUrl(album){
+  const base=window.location.href.split('?')[0].split('#')[0];
+  // Save album data to localStorage so viewer can load it
+  try{
+    const snap={
+      name:album.name,anim:album.anim||'flip',theme:album.theme||'ink',
+      track:album.track??-1,driveId:album.driveId||'',driveUrl:album.driveUrl||'',
+      pages:album.pages,date:album.date
+    };
+    localStorage.setItem('ff_snap_'+album.id,JSON.stringify(snap));
+    // Store rendered pages as data URLs (first 3 for preview, all for viewing)
+    const pageData=album.renderedPages.map(c=>c.toDataURL('image/jpeg',0.7));
+    localStorage.setItem('ff_pages_'+album.id,JSON.stringify(pageData));
+  }catch(e){console.warn('localStorage save failed',e);}
+  return base+'?view='+album.id+'&name='+encodeURIComponent(album.name);
+}
+
+function openShareModal(){
+  const album=albums[currentAlbumIdx];
+  if(!album){showToast('Open an album first');return;}
+  const viewerUrl=buildViewerUrl(album);
+  document.getElementById('shareUrlInput').value=viewerUrl;
+  document.getElementById('embedArea').textContent=`<iframe\n  src="${viewerUrl}"\n  width="100%"\n  height="640"\n  frameborder="0"\n  allowfullscreen\n></iframe>`;
+  document.getElementById('qrcode').innerHTML='';
+  new QRCode(document.getElementById('qrcode'),{text:viewerUrl,width:190,height:190,colorDark:'#0a0a0f',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});
+  if(album?.driveUrl){document.getElementById('shareDriveBanner').style.display='flex';}
+  else{document.getElementById('shareDriveBanner').style.display='none';}
+  openModal('shareModal');
+}
+function quickShare(idx){currentAlbumIdx=idx;openShareModal();}
+function switchShareTab(n,btn){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.tab-s').forEach(b=>b.classList.remove('on'));document.getElementById('stp-'+n).classList.add('on');btn.classList.add('on');}
+function copyShareUrl(){navigator.clipboard.writeText(document.getElementById('shareUrlInput').value).then(()=>{const b=document.getElementById('copyShareBtn');b.textContent='✓ Copied!';b.classList.add('ok');showToast('Link copied!');setTimeout(()=>{b.textContent='Copy';b.classList.remove('ok');},2500);});}
+function copyEmbed(){navigator.clipboard.writeText(document.getElementById('embedArea').textContent).then(()=>showToast('Embed code copied!'));}
+function dlQR(){const c=document.querySelector('#qrcode canvas');if(!c)return;const a=document.createElement('a');a.download='Album-QR.png';a.href=c.toDataURL('image/png');a.click();showToast('QR downloaded!');}
+
+// ════════════════════════════════════
+// PUBLISH
+// ════════════════════════════════════
+function openPublishModal(){
+  if(currentAlbumIdx<0){showToast('Open an album first');return;}
+  document.getElementById('pubNameInput').value=albums[currentAlbumIdx]?.name||'';
+  openModal('publishModal');
+}
+function quickPublish(idx){currentAlbumIdx=idx;openAlbumData(albums[idx]);openPublishModal();}
+
+function launchClient(){
+  const name=document.getElementById('pubNameInput').value.trim()||albums[currentAlbumIdx]?.name||'Wedding Album';
+  closeModal('publishModal');
+  if(currentAlbumIdx>=0)albums[currentAlbumIdx].status='published';
+  refreshDashboard();
+
+  // Setup client view
+  document.getElementById('chAlbumName').textContent=name;
+  cvSpread=0;
+  cvDrawSpread(0,null);
+
+  const cs=document.getElementById('clientScreen');
+  cs.classList.add('active');
+  cs.style.display='flex';
+
+  showToast('🚀 Client view launched!');
+  cs.requestFullscreen?.().catch(()=>{});
+}
+
+// ════════════════════════════════════
+// CLIENT VIEW
+// ════════════════════════════════════
+function cvDrawSpread(s,dir){
+  const li=s*2,ri=s*2+1;
+  function draw(t,src){if(!src){t.width=600;t.height=800;const ctx=t.getContext('2d');ctx.fillStyle='#f0e8d8';ctx.fillRect(0,0,600,800);return;}t.width=src.width;t.height=src.height;t.getContext('2d').drawImage(src,0,0);}
+  draw(document.getElementById('cbCanvasL'),renderedPages[li]);
+  draw(document.getElementById('cbCanvasR'),renderedPages[ri]);
+  document.getElementById('cbPgnL').textContent=li+1;
+  document.getElementById('cbPgnR').textContent=renderedPages[ri]?ri+1:'';
+  document.getElementById('cvCur').textContent=li+1;
+  document.getElementById('cvTotal').textContent=totalPages;
+  cvUpdateBtns();
+  if(dir){
+    const b=document.getElementById('clientBook');
+    const cls='cab-'+currentAnim+'-'+dir;
+    b.classList.add(cls);setTimeout(()=>b.classList.remove(cls),650);
+  }
+}
+function cvUpdateBtns(){
+  const tot=Math.ceil(totalPages/2);
+  ['ccFirst','ccPrev'].forEach(id=>{const e=document.getElementById(id);if(e)e.disabled=cvSpread===0;});
+  ['ccNext','ccLast'].forEach(id=>{const e=document.getElementById(id);if(e)e.disabled=cvSpread>=tot-1;});
+}
+function cvGoNext(){if(!cvAnimating&&cvSpread<Math.ceil(totalPages/2)-1){cvAnimating=true;cvSpread++;cvDrawSpread(cvSpread,'next');setTimeout(()=>{cvAnimating=false;},650);}}
+function cvGoPrev(){if(!cvAnimating&&cvSpread>0){cvAnimating=true;cvSpread--;cvDrawSpread(cvSpread,'prev');setTimeout(()=>{cvAnimating=false;},650);}}
+function cvGoFirst(){if(!cvAnimating){cvSpread=0;cvDrawSpread(0,'prev');}}
+function cvGoLast(){const t=Math.ceil(totalPages/2)-1;if(!cvAnimating){cvSpread=t;cvDrawSpread(t,'next');}}
+
+function toggleClientMute(){
+  clientMuted=!clientMuted;
+  document.getElementById('chMute').textContent=clientMuted?'🔇':'🔊';
+  if(audioCtx){if(clientMuted)audioCtx.suspend();else audioCtx.resume();}
+  if(audioEl)audioEl.muted=clientMuted;
+  showToast(clientMuted?'🔇 Muted':'🔊 Unmuted');
+}
+
+// Client swipe
+let cvTouchX=0;
+document.getElementById('clientScreen').addEventListener('touchstart',e=>{cvTouchX=e.touches[0].clientX;},{passive:true});
+document.getElementById('clientScreen').addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-cvTouchX;if(Math.abs(dx)>50){dx<0?cvGoNext():cvGoPrev();}},{passive:true});
+
+// ════════════════════════════════════
+// ALBUM MANAGEMENT
+// ════════════════════════════════════
+function deleteAlbum(idx){
+  if(!confirm('Delete "'+albums[idx].name+'"?'))return;
+  albums.splice(idx,1);
+  refreshDashboard();
+  showToast('Album deleted');
+}
+
+// ════════════════════════════════════
+// GOOGLE DRIVE
+// ════════════════════════════════════
+function connectDrive(){
+  const client=google.accounts.oauth2.initTokenClient({
+    client_id:GOOGLE_CLIENT_ID,scope:SCOPES,
+    callback:async(resp)=>{
+      if(resp.error){showToast('❌ Sign-in failed');return;}
+      accessToken=resp.access_token;
+      try{
+        const r=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+accessToken}});
+        const d=await r.json();userEmail=d.email||'Connected';
+      }catch(e){userEmail='Connected';}
+      document.getElementById('driveConnectBox').style.display='none';
+      document.getElementById('driveConnectedBox').style.display='block';
+      document.getElementById('driveConnectedEmail').textContent=userEmail;
+      document.getElementById('dsAvatar').textContent=userEmail.charAt(0).toUpperCase();
+      document.getElementById('dsUname').textContent=userEmail.split('@')[0];
+      document.getElementById('dsUemail').textContent=userEmail;
+      updateStats();
+      showToast('✓ Google Drive connected!');
+    }
+  });
+  client.requestAccessToken();
+}
+
+async function uploadToDrive(file){
+  if(!accessToken)return null;
+  let folderId=await getOrCreateFolder('FlipFolio Albums');
+  const metadata={name:file.name,mimeType:'application/pdf',parents:folderId?[folderId]:[]};
+  const form=new FormData();
+  form.append('metadata',new Blob([JSON.stringify(metadata)],{type:'application/json'}));
+  form.append('file',file);
+  const resp=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name',{method:'POST',headers:{Authorization:'Bearer '+accessToken},body:form});
+  if(!resp.ok)return null;
+  const data=await resp.json();
+  await fetch(`https://www.googleapis.com/drive/v3/files/${data.id}/permissions`,{method:'POST',headers:{Authorization:'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({role:'reader',type:'anyone'})});
+  return{id:data.id,url:`https://drive.google.com/file/d/${data.id}/view?usp=sharing`};
+}
+
+async function getOrCreateFolder(name){
+  const s=await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${name}' and mimeType='application/vnd.google-apps.folder' and trashed=false&fields=files(id)`,{headers:{Authorization:'Bearer '+accessToken}});
+  const d=await s.json();
+  if(d.files?.length>0)return d.files[0].id;
+  const c=await fetch('https://www.googleapis.com/drive/v3/files',{method:'POST',headers:{Authorization:'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({name,mimeType:'application/vnd.google-apps.folder'})});
+  const cd=await c.json();return cd.id||null;
+}
+
+// ════════════════════════════════════
+// MODAL HELPERS
+// ════════════════════════════════════
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});});
+
+// ════════════════════════════════════
+// UTILS
+// ════════════════════════════════════
+function delay(ms){return new Promise(r=>setTimeout(r,ms));}
+let toastTimer;
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2800);}
+
+// ════════════════════════════════════
+// URL-BASED VIEWER (QR / Link opens flipbook directly)
+// ════════════════════════════════════
+async function checkUrlViewer(){
+  const params=new URLSearchParams(window.location.search);
+  const viewId=params.get('view');
+  if(!viewId) return false; // Normal mode
+
+  // Show a standalone viewer for this album
+  const snapStr=localStorage.getItem('ff_snap_'+viewId);
+  const pagesStr=localStorage.getItem('ff_pages_'+viewId);
+
+  if(!snapStr||!pagesStr){
+    // No local data — show a nice "album not found" with Drive fallback
+    showPublicViewerNotFound(params.get('name')||'Album', viewId);
+    return true;
+  }
+
+  const snap=JSON.parse(snapStr);
+  const pagesData=JSON.parse(pagesStr);
+
+  // Rebuild canvases from data URLs
+  const pages=await Promise.all(pagesData.map(src=>new Promise(res=>{
+    const img=new Image();
+    img.onload=()=>{
+      const c=document.createElement('canvas');
+      c.width=img.width;c.height=img.height;
+      c.getContext('2d').drawImage(img,0,0);res(c);
+    };img.src=src;
+  })));
+
+  // Launch public viewer
+  showPublicViewer(snap, pages);
+  return true;
+}
+
+function showPublicViewer(snap, pages){
+  // Hide everything, show a full-screen public flipbook viewer
+  document.querySelectorAll('.screen').forEach(s=>s.style.display='none');
+  document.getElementById('progressModal').style.display='none';
+
+  const viewer=document.createElement('div');
+  viewer.id='publicViewer';
+  viewer.style.cssText='position:fixed;inset:0;z-index:99999;background:#07070d;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Outfit,sans-serif;';
+
+  // Header
+  const header=document.createElement('div');
+  header.style.cssText='position:absolute;top:0;left:0;right:0;height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(7,7,13,0.95);border-bottom:1px solid rgba(255,255,255,0.06);z-index:2;';
+  header.innerHTML=`
+    <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:rgba(212,168,67,0.75);letter-spacing:1px;">FlipFolio</div>
+    <div style="font-family:'Playfair Display',serif;font-size:0.95rem;font-style:italic;color:#f5f0e8;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${snap.name}</div>
+    <button id="pvMuteBtn" onclick="pvToggleMute()" style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);color:rgba(255,255,255,0.55);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">🔊</button>
+  `;
+
+  // Stage
+  const stage=document.createElement('div');
+  stage.style.cssText='flex:1;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;padding-top:76px;position:relative;';
+
+  // Build book HTML
+  const bookWrap=document.createElement('div');
+  bookWrap.style.cssText='perspective:2400px;';
+  const book=document.createElement('div');
+  book.id='pvBook';
+  book.style.cssText='display:flex;align-items:stretch;filter:drop-shadow(0 30px 70px rgba(0,0,0,0.9));';
+  const pgL=document.createElement('div');
+  pgL.style.cssText='width:320px;max-width:42vw;border-radius:5px 0 0 5px;overflow:hidden;background:#1a1510;position:relative;box-shadow:inset -10px 0 28px rgba(0,0,0,0.7);';
+  const canL=document.createElement('canvas');canL.id='pvCanvasL';canL.style.cssText='width:100%;height:auto;display:block;';
+  const pgnL=document.createElement('div');pgnL.id='pvPgnL';pgnL.style.cssText='position:absolute;bottom:9px;left:0;right:0;text-align:center;font-size:0.58rem;font-family:Playfair Display,serif;color:rgba(212,168,67,0.35);letter-spacing:1.5px;';
+  pgL.appendChild(canL);pgL.appendChild(pgnL);
+  const spine=document.createElement('div');
+  spine.style.cssText='width:18px;flex-shrink:0;background:linear-gradient(to right,#050403 0%,rgba(212,168,67,0.25) 30%,rgba(212,168,67,0.35) 50%,rgba(212,168,67,0.2) 70%,#080606 100%);';
+  const pgR=document.createElement('div');
+  pgR.style.cssText='width:320px;max-width:42vw;border-radius:0 5px 5px 0;overflow:hidden;background:#1a1510;position:relative;box-shadow:inset 10px 0 28px rgba(0,0,0,0.4);';
+  const canR=document.createElement('canvas');canR.id='pvCanvasR';canR.style.cssText='width:100%;height:auto;display:block;';
+  const pgnR=document.createElement('div');pgnR.id='pvPgnR';pgnR.style.cssText='position:absolute;bottom:9px;left:0;right:0;text-align:center;font-size:0.58rem;font-family:Playfair Display,serif;color:rgba(212,168,67,0.35);letter-spacing:1.5px;';
+  pgR.appendChild(canR);pgR.appendChild(pgnR);
+  book.appendChild(pgL);book.appendChild(spine);book.appendChild(pgR);
+  bookWrap.appendChild(book);
+
+  // Controls
+  const ctrls=document.createElement('div');
+  ctrls.style.cssText='display:flex;align-items:center;gap:18px;margin-top:26px;';
+  ctrls.innerHTML=`
+    <button id="pvFirst" onclick="pvGoFirst()" style="${pvBtnStyle()}">⏮</button>
+    <button id="pvPrev"  onclick="pvGoPrev()"  style="${pvBtnStyle()}">◀</button>
+    <div id="pvPi" style="font-family:'Playfair Display',serif;font-size:0.9rem;color:rgba(212,168,67,0.4);min-width:80px;text-align:center;letter-spacing:1px;"><strong id="pvCur" style="color:#f5f0e8;">1</strong> <span style="opacity:0.4;">/</span> <strong id="pvTot" style="color:#f5f0e8;">${pages.length}</strong></div>
+    <button id="pvNext"  onclick="pvGoNext()"  style="${pvBtnStyle()}">▶</button>
+    <button id="pvLast"  onclick="pvGoLast()"  style="${pvBtnStyle()}">⏭</button>
+  `;
+
+  // Watermark
+  const wm=document.createElement('div');
+  wm.style.cssText='position:absolute;bottom:12px;right:16px;font-family:Playfair Display,serif;font-size:0.62rem;color:rgba(212,168,67,0.18);letter-spacing:1.5px;';
+  wm.textContent='FlipFolio';
+
+  stage.appendChild(bookWrap);stage.appendChild(ctrls);
+  viewer.appendChild(header);viewer.appendChild(stage);viewer.appendChild(wm);
+  document.body.appendChild(viewer);
+
+  // State
+  window._pv={pages,spread:0,anim:snap.anim||'flip',total:pages.length,animating:false};
+
+  pvDrawSpread(0,null);
+  pvStartMusic(snap.track);
+
+  // Touch swipe
+  let tx=0;
+  viewer.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;},{passive:true});
+  viewer.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>50){dx<0?pvGoNext():pvGoPrev();}},{passive:true});
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key==='ArrowDown')pvGoNext();
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp')pvGoPrev();
+  });
+}
+
+function pvBtnStyle(){
+  return 'width:50px;height:50px;border-radius:50%;border:1px solid rgba(212,168,67,0.2);background:rgba(212,168,67,0.04);color:rgba(212,168,67,0.65);font-size:1rem;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;';
+}
+
+function pvDrawSpread(s,dir){
+  const pv=window._pv;
+  const li=s*2,ri=s*2+1;
+  function draw(t,src){
+    if(!src){t.width=600;t.height=800;const ctx=t.getContext('2d');ctx.fillStyle='#f0e8d8';ctx.fillRect(0,0,600,800);return;}
+    t.width=src.width;t.height=src.height;t.getContext('2d').drawImage(src,0,0);
+  }
+  draw(document.getElementById('pvCanvasL'),pv.pages[li]);
+  draw(document.getElementById('pvCanvasR'),pv.pages[ri]);
+  document.getElementById('pvPgnL').textContent=li+1;
+  document.getElementById('pvPgnR').textContent=pv.pages[ri]?ri+1:'';
+  document.getElementById('pvCur').textContent=li+1;
+  document.getElementById('pvTot').textContent=pv.total;
+  // Update button states
+  const tot=Math.ceil(pv.total/2);
+  ['pvFirst','pvPrev'].forEach(id=>{const e=document.getElementById(id);if(e)e.disabled=s===0;});
+  ['pvNext','pvLast'].forEach(id=>{const e=document.getElementById(id);if(e)e.disabled=s>=tot-1;});
+  // Animate
+  if(dir){
+    const animMap={flip:'pv-flip',slide:'pv-slide',fade:'pv-fade',zoom:'pv-zoom',curl:'pv-curl',bounce:'pv-bounce'};
+    const b=document.getElementById('pvBook');
+    const cls=(animMap[pv.anim]||'pv-flip')+'-'+dir;
+    // Inline keyframe via class
+    if(!document.getElementById('pvAnimStyle')){
+      const st=document.createElement('style');st.id='pvAnimStyle';
+      st.textContent=`
+        @keyframes pvFlipL{0%{transform:perspective(1400px) rotateY(0);}50%{transform:perspective(1400px) rotateY(-85deg);}100%{transform:perspective(1400px) rotateY(0);}}
+        @keyframes pvFlipR{0%{transform:perspective(1400px) rotateY(0);}50%{transform:perspective(1400px) rotateY(85deg);}100%{transform:perspective(1400px) rotateY(0);}}
+        @keyframes pvSlideR{from{transform:translateX(70px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+        @keyframes pvSlideL{from{transform:translateX(-70px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+        @keyframes pvFade{from{opacity:0;}to{opacity:1;}}
+        @keyframes pvZoom{from{transform:scale(0.87);opacity:0;}to{transform:scale(1);opacity:1;}}
+        @keyframes pvBounce{0%{transform:scale(0.72) translateY(28px);opacity:0;}60%{transform:scale(1.04) translateY(-4px);opacity:1;}100%{transform:scale(1);opacity:1;}}
+        .pv-flip-next #pvBook > div:first-child{animation:pvFlipL 0.55s ease-in-out;}
+        .pv-flip-prev #pvBook > div:last-child{animation:pvFlipR 0.55s ease-in-out;}
+        .pv-slide-next #pvBook > div:last-child{animation:pvSlideR 0.4s cubic-bezier(.4,0,.2,1);}
+        .pv-slide-next #pvBook > div:first-child{animation:pvSlideL 0.4s cubic-bezier(.4,0,.2,1);}
+        .pv-slide-prev #pvBook > div:first-child{animation:pvSlideR 0.4s cubic-bezier(.4,0,.2,1);}
+        .pv-slide-prev #pvBook > div:last-child{animation:pvSlideL 0.4s cubic-bezier(.4,0,.2,1);}
+        .pv-fade-next #pvBook > div,.pv-fade-prev #pvBook > div{animation:pvFade 0.5s ease;}
+        .pv-zoom-next #pvBook > div,.pv-zoom-prev #pvBook > div{animation:pvZoom 0.45s cubic-bezier(.34,1.4,.64,1);}
+        .pv-bounce-next #pvBook > div,.pv-bounce-prev #pvBook > div{animation:pvBounce 0.55s cubic-bezier(.34,1.56,.64,1);}
+      `;
+      document.head.appendChild(st);
+    }
+    const wrapper=document.getElementById('pvBook').parentElement;
+    wrapper.classList.add(cls);
+    setTimeout(()=>wrapper.classList.remove(cls),650);
+  }
+}
+function pvGoNext(){const pv=window._pv;if(!pv||pv.animating||pv.spread>=Math.ceil(pv.total/2)-1)return;pv.animating=true;pv.spread++;pvDrawSpread(pv.spread,'next');setTimeout(()=>{pv.animating=false;},650);}
+function pvGoPrev(){const pv=window._pv;if(!pv||pv.animating||pv.spread<=0)return;pv.animating=true;pv.spread--;pvDrawSpread(pv.spread,'prev');setTimeout(()=>{pv.animating=false;},650);}
+function pvGoFirst(){const pv=window._pv;if(!pv||pv.animating)return;pv.spread=0;pvDrawSpread(0,'prev');}
+function pvGoLast(){const pv=window._pv;if(!pv||pv.animating)return;pv.spread=Math.ceil(pv.total/2)-1;pvDrawSpread(pv.spread,'next');}
+
+let pvAudioCtx=null,pvMuted=false;
+function pvStartMusic(trackIdx){
+  if(trackIdx<0||trackIdx>=4)return;
+  const TRACKS=[{freq:261},{freq:293},{freq:329},{freq:349}];
+  try{
+    pvAudioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    const o=pvAudioCtx.createOscillator(),g=pvAudioCtx.createGain();
+    const o2=pvAudioCtx.createOscillator(),g2=pvAudioCtx.createGain();
+    o.type='sine';o.frequency.value=TRACKS[trackIdx].freq;g.gain.value=0.06;
+    o2.type='sine';o2.frequency.value=TRACKS[trackIdx].freq*1.498;g2.gain.value=0.03;
+    o.connect(g);g.connect(pvAudioCtx.destination);
+    o2.connect(g2);g2.connect(pvAudioCtx.destination);
+    o.start();o2.start();
+  }catch(e){}
+}
+function pvToggleMute(){
+  pvMuted=!pvMuted;
+  const btn=document.getElementById('pvMuteBtn');
+  if(btn)btn.textContent=pvMuted?'🔇':'🔊';
+  if(pvAudioCtx){pvMuted?pvAudioCtx.suspend():pvAudioCtx.resume();}
+}
+
+function showPublicViewerNotFound(name, id){
+  document.querySelectorAll('.screen').forEach(s=>s.style.display='none');
+  const el=document.createElement('div');
+  el.style.cssText='position:fixed;inset:0;z-index:99999;background:#07070d;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;font-family:Outfit,sans-serif;';
+  el.innerHTML=`
+    <div style="font-size:3rem;margin-bottom:20px;">📖</div>
+    <div style="font-family:'Playfair Display',serif;font-size:1.8rem;color:#f5f0e8;margin-bottom:8px;">${name}</div>
+    <div style="font-size:0.9rem;color:#6a6278;margin-bottom:8px;line-height:1.6;">This album needs to be opened on the device<br/>where it was originally created.</div>
+    <div style="font-size:0.75rem;color:#3e3850;margin-top:8px;">Album ID: ${id}</div>
+  `;
+  document.body.appendChild(el);
+}
+
+// Run on page load
+window.addEventListener('DOMContentLoaded', async ()=>{
+  const isViewer = await checkUrlViewer();
+  if(isViewer) return; // Stop — just show the viewer
+  // Normal app mode
+});
+
+</script>
+</body>
+</html>
